@@ -1,0 +1,163 @@
+Saya ingin membuat rencana lengkap untuk Tugas Akhir Praktikum Sistem Informasi dengan studi kasus Sistem Informasi Manajemen Kos (SIM Kos). Implementasi akan saya kerjakan dengan bantuan AI coding agent di Google Antigravity. Tugas Anda sekarang adalah menghasilkan PRD, spesifikasi teknis, dan task implementasi yang konkret, konsisten, mudah dipahami mahasiswa, dan siap diberikan kepada coding agent. Jangan langsung membuat aplikasi atau hanya menghasilkan desain UI.
+
+Gunakan bahasa Indonesia. Utamakan aplikasi yang benar-benar selesai, dapat dijalankan lokal di laptop Windows, dan dapat didemonstrasikan dengan database nyata. AI membantu implementasi, tetapi mahasiswa tetap harus memahami dan dapat menjelaskan keseluruhan sistem.
+
+1. KONTEKS DAN KEDUDUKAN SUMBER
+
+Proyek ini melanjutkan laporan praktikum yang sudah dikerjakan:
+- Modul 1: Project Charter Sistem Informasi Manajemen Kos.
+- Modul 2: Analisis Proses Bisnis dan BPMN Penempatan Penghuni ke Kamar, Pembayaran Sewa, dan Pencatatan Keluhan.
+- Modul 3: Analisis Kebutuhan Informasi dan Information Requirement Matrix (IRM).
+- Dokumen TUGAS AKHIR PRAK SI: ketentuan aplikasi, pengumpulan, dan demonstrasi.
+
+Ringkasan sumber sudah saya berikan di bawah agar prompt ini dapat dipakai tanpa lampiran. Jika dokumen asli ikut tersedia, gunakan untuk verifikasi. Jangan mengaku telah membaca lampiran yang tidak tersedia.
+
+Bedakan secara eksplisit: persyaratan wajib TA, kebutuhan dari Modul 1–3, asumsi implementasi, dan fitur opsional. Contoh Sistem Informasi Toko dalam ketentuan TA hanya ilustrasi; jangan menambahkan barang, supplier, kasir, atau penjualan toko ke SIM Kos. Pertahankan studi kasus dan makna proses bisnis. Ketentuan baru TA seperti audit trail tetap harus ditambahkan meskipun belum dirinci dalam modul awal. Jika sumber bertentangan, jelaskan konflik dan usulkan penyelesaian; jangan mengubahnya diam-diam.
+
+2. MASALAH, TUJUAN, DAN BATAS SISTEM
+
+Sistem melayani satu usaha kos skala kecil hingga menengah. Pengelolaan diasumsikan masih menggunakan catatan manual dan aplikasi pesan sehingga data tersebar.
+
+Masalah utama:
+- Status kamar kosong/terisi sulit dipantau secara akurat.
+- Pembayaran dan riwayat sewa sulit diperiksa dan berisiko salah catat.
+- Data penghuni sulit dicari dan diperbarui.
+- Keluhan serta tindak lanjut perbaikan fasilitas sulit dipantau.
+- Pemilik sulit memperoleh informasi pendapatan per periode.
+
+Tujuan: mengintegrasikan data kamar, penghuni, penempatan, tarif, pembayaran, fasilitas, dan keluhan menjadi informasi untuk kegiatan operasional dan pengambilan keputusan. Tunjukkan hubungan Data → Proses → Penyimpanan → Informasi → Keputusan secara konkret.
+
+Ruang lingkup dari Modul 1: kamar, penghuni, penempatan kamar, tarif sewa, pencatatan pembayaran, status/riwayat pembayaran, fasilitas dan kondisinya, keluhan dan tindak lanjut, serta informasi dan laporan pendapatan.
+
+Di luar ruang lingkup: pengelolaan usaha kos milik pihak lain, jual beli properti, keuangan pribadi, penggajian pegawai, layanan eksternal seperti laundry/makanan/transportasi, dan pembayaran kebutuhan pribadi penghuni.
+
+Untuk menjaga implementasi sederhana, jangan menambahkan marketplace kos, multi-tenant SaaS, aplikasi mobile native, payment gateway, WhatsApp API, chatbot AI, atau layanan berbayar sebagai kebutuhan inti. Ini batas implementasi yang diusulkan, bukan kutipan ketentuan dosen. Penggunaan AI adalah cara membangun aplikasi; aplikasi tidak harus memiliki fitur AI.
+
+3. PENGGUNA DAN HAK AKSES
+
+Gunakan tiga role sesuai identifikasi pengguna dalam laporan:
+- Admin/Pengelola: mengelola master data, akun pengguna, penempatan, tarif, pencatatan pembayaran, fasilitas, keluhan dan tindak lanjut, serta mengakses informasi operasional sesuai kewenangan.
+- Pemilik: memantau kamar, penghuni, pembayaran, pendapatan, fasilitas, keluhan, dashboard, laporan, dan audit trail. Jadikan akses pemantauan/read-only sebagai asumsi implementasi awal; rincian permission harus dijelaskan.
+- Penghuni: melihat informasi kamar/penempatan sendiri, kewajiban dan riwayat pembayaran sendiri, menyampaikan keluhan, serta melihat tindak lanjut keluhan sendiri.
+
+Berikan matriks permission per modul dan aksi. Pembatasan akses wajib diterapkan di server, termasuk kepemilikan data penghuni; menyembunyikan menu saja tidak cukup. Pembuatan akun oleh admin dapat menjadi asumsi awal agar tidak perlu registrasi publik. Pengelolaan akun admin/pemilik harus memiliki aturan yang jelas agar tidak ada eskalasi hak akses tanpa kewenangan.
+
+4. PERSYARATAN WAJIB DARI KETENTUAN TA
+
+A. Login dan logout dengan username atau email serta password yang benar; minimal dua role dengan menu/hak akses berbeda. Proyek ini menggunakan tiga role di atas.
+
+B. Minimal tiga master data. Pilih Kamar, Penghuni, dan Fasilitas sebagai tiga modul utama yang jelas. Masing-masing wajib memiliki tambah, tampilkan, edit, hapus, cari, detail, dan validasi input. Tentukan field, tipe, aturan wajib/unik, relasi, serta pesan error. Tarif dapat dikelola bersama kamar atau sebagai modul tersendiri dengan alasan yang jelas.
+
+Fitur hapus harus dapat didemonstrasikan pada data uji yang aman. Untuk data yang sudah direferensikan transaksi, tentukan aturan pembatasan penghapusan atau arsip agar riwayat tetap utuh; jangan melakukan cascade delete yang menghilangkan pembayaran.
+
+C. Minimal satu transaksi utama yang menghubungkan beberapa tabel. Jadikan Pembayaran Sewa sebagai transaksi utama, dan tetap implementasikan Penempatan serta Keluhan sesuai laporan. Sertakan nomor transaksi otomatis yang unik, validasi, penyimpanan database, perubahan status, dan bukti pembayaran yang dapat dicetak sebagai rancangan adaptasi transaksi ke studi kasus kos.
+
+D. Dashboard minimal tiga KPI, dua grafik, dan satu tabel informasi penting. Semua dihitung dari database, termasuk setelah transaksi baru dibuat. Usulan konkret:
+- KPI: kamar kosong, kamar terisi, pendapatan periode terpilih, dan jumlah kewajiban yang belum dibayar.
+- Grafik: tren pendapatan bulanan dan distribusi status kamar saat ini.
+- Tabel: kewajiban jatuh tempo/belum dibayar atau pembayaran terbaru.
+Definisikan rumus, sumber tabel, filter, dan perlakuan data kosong. Jangan memberikan kesan bahwa distribusi kamar saat ini adalah data historis. Jelaskan keputusan yang dibantu oleh masing-masing informasi. Portal penghuni hanya menampilkan informasi miliknya; dashboard manajemen tidak boleh terbuka untuk penghuni.
+
+E. Minimal dua jenis laporan. Gunakan Laporan Pembayaran/Pendapatan dan Laporan Status Pembayaran per Periode. Untuk masing-masing sediakan filter tanggal/periode, pencarian, pengurutan, total/rekapitulasi, serta cetak atau ekspor PDF/Excel. Pilih satu mekanisme keluaran yang andal sebagai implementasi wajib; tidak perlu mewajibkan PDF dan Excel sekaligus.
+Bedakan tanggal uang diterima dengan periode sewa. Definisikan apakah laporan status menampilkan status terkini untuk periode sewa yang dipilih atau status historis pada tanggal tertentu. Hindari mengklaim laporan historis jika data pendukungnya belum dirancang.
+
+F. Audit trail mencatat minimal nama pengguna, aktivitas, modul, data yang diproses, dan waktu. Rencanakan log untuk perubahan master data, penempatan, pembayaran, perubahan status keluhan, dan akses/cetak laporan yang relevan. Log tidak dapat diedit atau dihapus melalui menu pengguna biasa dan tidak menyimpan password/token. Identitas pelaku harus tetap dapat ditelusuri saat akun diarsipkan.
+
+G. Database terintegrasi dengan primary key, foreign key, relasi, tipe data yang sesuai, dan data contoh. Semua proses harus menggunakan database nyata, bukan localStorage, array statis, atau mock data sebagai penyimpanan utama.
+
+H. UI rapi, konsisten, navigasi jelas, nyaman di laptop, menampilkan notifikasi berhasil/gagal, dan validasi form. Gunakan bahasa Indonesia, Rupiah, serta zona waktu Asia/Jakarta. Kondisi kosong, loading, error, konfirmasi hapus, tabel, pencarian, dan detail harus dirancang.
+
+5. PROSES BISNIS YANG HARUS DIPERTAHANKAN
+
+A. Penempatan Penghuni ke Kamar
+Admin menerima/memeriksa data penghuni → memeriksa ketersediaan kamar → keputusan “Kamar Tersedia?” → jika tersedia, mencatat penempatan dan memperbarui status kamar menjadi terisi serta status penempatan → menampilkan informasi penghuni dan kamar. Jika tidak tersedia, proses ditunda, tanpa membuat penempatan aktif atau mengubah kamar secara keliru.
+
+B. Pembayaran Sewa
+Penghuni melakukan pembayaran → admin memeriksa jumlah, tarif, dan periode → keputusan “Pembayaran Sesuai?” → jika sesuai, mencatat pembayaran dan memperbarui status serta riwayat → jika tidak sesuai, memberi informasi ketidaksesuaian agar penghuni melakukan penyesuaian/pembayaran ulang. Pembayaran tidak sesuai tidak boleh dianggap lunas atau menjadi pendapatan sah. Pembayaran dapat berlangsung di luar aplikasi dan dicatat admin; payment gateway maupun unggah bukti bukan kewajiban dari laporan.
+
+C. Pencatatan Keluhan
+Penghuni menyampaikan keluhan kamar/fasilitas → admin mencatat dan memeriksa → keputusan “Perlu Tindak Lanjut?” → jika perlu, menangani keluhan dan memperbarui status → jika tidak perlu, menutup tanpa tindak lanjut. Simpan tindakan, tanggal penanganan, status, dan alasan penutupan. Penghuni dapat melihat perkembangan keluhannya sendiri.
+Ada ambiguitas pada sumber: narasi Modul 2 menempatkan penutupan tanpa tindak lanjut pada admin, sedangkan kotak tersebut di diagram berada pada lane penghuni. Tandai sebagai hal yang perlu diklarifikasi; usulkan kewenangan penutupan pada admin berdasarkan narasi, tanpa menyebutnya kesimpulan sumber yang pasti.
+
+6. KEBUTUHAN INFORMASI MODUL 3
+
+Petakan seluruh 12 kebutuhan berikut ke halaman, field, tabel, permission, serta acceptance criteria:
+IRM-01 Admin: identitas penghuni sebelum menentukan kamar; nama, telepon, tanggal mulai tinggal.
+IRM-02 Admin: daftar kamar kosong sebelum penempatan; nomor dan status kamar.
+IRM-03 Admin: kamar yang tersedia dan sesuai saat memilih penempatan; nomor/status kamar dan data penghuni.
+IRM-04 Admin: hasil penempatan setelah kamar dipilih; penghuni, kamar, tanggal mulai menempati, status penempatan.
+IRM-05 Admin: jumlah yang seharusnya dibayar saat pemeriksaan; tarif, periode sewa, penghuni.
+IRM-06 Admin: kesesuaian setelah pembayaran diterima; jumlah pembayaran, tarif, periode pembayaran.
+IRM-07 Admin: status pembayaran setelah dinyatakan sesuai; penghuni, periode, jumlah, status.
+IRM-08 Penghuni: hasil dan riwayat pembayaran sendiri setelah dicatat; periode, tanggal, jumlah, status.
+IRM-09 Admin: detail keluhan setelah diterima; penghuni, isi, kamar, fasilitas terkait, tanggal.
+IRM-10 Admin: dasar keputusan tindak lanjut setelah diperiksa; isi keluhan, fasilitas, kondisi fasilitas.
+IRM-11 Admin: perkembangan setelah penanganan; keluhan, tindakan, tanggal, status penyelesaian.
+IRM-12 Penghuni: perkembangan keluhan sendiri setelah diperbarui; keluhan, tindakan, status penyelesaian.
+
+Pemilik tetap memiliki akses pemantauan dari Modul 1 walaupun tidak menjadi aktor dalam 12 baris IRM tersebut. Informasi harus relevan, akurat, cukup lengkap, dan tersedia ketika dibutuhkan.
+
+7. ASUMSI DAN ATURAN IMPLEMENTASI YANG PERLU DIPUTUSKAN
+
+Laporan belum menetapkan stack, ERD final, kapasitas kamar, tanggal jatuh tempo, cicilan, prorata, atau mekanisme tagihan. Jangan mengklaim hal-hal tersebut sudah diwajibkan dosen.
+
+Gunakan asumsi sederhana berikut sebagai baseline dan tampilkan dalam daftar asumsi yang dapat dikoreksi:
+- Satu kamar ditempati satu penghuni aktif; satu penghuni memiliki satu penempatan aktif.
+- Sewa bulanan, pembayaran penuh per periode; cicilan, denda otomatis, deposit, dan prorata di luar versi awal.
+- Kewajiban pembayaran direpresentasikan secara eksplisit per penempatan dan periode agar penghuni yang belum pernah membayar tetap muncul sebagai belum bayar. Usulkan tabel tagihan/kewajiban sebagai elaborasi teknis, bukan proses bisnis baru yang diklaim berasal dari BPMN.
+- Pilih aturan konkret pembuatan kewajiban, periode pertama/terakhir, dan jatuh tempo. Jangan bergantung pada scheduler yang belum tersedia; proses manual admin yang idempoten dapat dipilih untuk demo.
+- Snapshot tarif per kewajiban/periode agar perubahan tarif kamar tidak mengubah histori.
+- Cegah kewajiban ganda, pembayaran sah ganda, nomor transaksi ganda, dan penempatan ganda, termasuk ketika form dikirim dua kali atau dua request bersamaan.
+- Gunakan transaksi database dan strategi constraint/locking yang sesuai saat operasi terkait harus berhasil atau gagal bersama-sama.
+- Bedakan status kewajiban belum bayar/lunas dari hasil pemeriksaan pembayaran sesuai/tidak sesuai. Tetapkan aturan koreksi/pembatalan pembayaran yang menjaga riwayat; jika tidak diimplementasikan pada versi awal, larang pengubahan bebas transaksi sah dan nyatakan keterbatasannya.
+- Jelaskan aturan penghentian penempatan agar kamar dapat digunakan kembali dengan histori tetap tersimpan. Tandai sebagai elaborasi siklus penempatan, bukan proses tambahan dari Modul 2.
+- Fasilitas dapat berada di kamar tertentu atau area bersama. Definisikan relasi kamar yang opsional dan kondisi fasilitas.
+- Nominal uang memakai tipe presisi tepat; hindari floating point.
+
+8. ARSITEKTUR DAN TEKNOLOGI
+
+Pilih satu stack utama yang sederhana, minim layanan eksternal, mudah dibangun AI, dapat dipahami mahasiswa, dan mudah dijalankan pada Windows. Utamakan monolit dengan database relasional, autentikasi, otorisasi, migration, seeder, grafik, dan cetak laporan.
+
+Belum ada stack yang ditetapkan dosen dalam dokumen. Jelaskan alasan pilihan dan kebutuhan instalasinya. Jika perlu membandingkan, cukup paling banyak dua alternatif lalu putuskan satu. Jangan membuat microservices atau memisahkan frontend/backend tanpa alasan kuat. Versi dependency harus kompatibel dan diverifikasi coding agent sebelum instalasi, bukan ditebak.
+
+Rancang demo yang dapat berjalan lokal setelah instalasi selesai, dengan aset UI tersedia lokal. Hosting bukan syarat wajib yang disebutkan dalam ketentuan. Wajib ada cara menghasilkan dan memulihkan database .sql, selain migration dan seeder.
+
+9. KELUARAN PLAN YANG SAYA MINTA
+
+Susun keluaran menjadi bagian yang dapat disimpan sebagai dokumen Markdown berikut, atau struktur ekuivalen bila format platform sudah ditentukan:
+
+A. PRD.md
+Masalah, tujuan, ruang lingkup, role, user stories, fitur inti, kebutuhan nonfungsional, asumsi, dan batas versi awal. Semua ketentuan TA dan kebutuhan laporan harus masuk fitur inti; jangan memindahkan keluhan/fasilitas/audit trail ke nice-to-have.
+
+B. REQUIREMENTS_MATRIX.md
+Matriks setiap persyaratan TA dan IRM-01 sampai IRM-12 → fitur/halaman → tabel/data → test case → bukti demo. Bedakan kewajiban asli dan keputusan desain.
+
+C. ARCHITECTURE.md dan DATABASE.md
+Stack terpilih, struktur folder, alur request, keamanan, ERD beserta kardinalitas, data dictionary, PK/FK, nullability, unique constraint/index, aturan hapus, transaksi database, state transition, dan rancangan seed. Kandidat entitas: role, user, kamar, penghuni, penempatan, fasilitas, kewajiban/tagihan, pembayaran, keluhan, tindak lanjut, activity log. Evaluasi kebutuhan tabel tarif terpisah; jangan membuat tabel hanya untuk memperbanyak jumlahnya.
+
+D. FEATURE_SPECS.md
+Spesifikasi setiap modul: tujuan, aktor, permission, halaman, field, validasi, alur sukses/gagal, efek pada data, pencatatan audit, dan acceptance criteria. Sertakan definisi perhitungan dashboard/laporan serta rancangan navigasi per role. Pertahankan tiga alur BPMN; jika menggunakan Mermaid untuk penjelasan, sebut sebagai diagram alur pendamping, bukan BPMN standar.
+
+E. IMPLEMENTATION_TASKS.md
+Urutkan milestone berdasarkan dependensi: setup → database/seed → autentikasi/otorisasi → master data → penempatan/kewajiban → pembayaran → keluhan/tindak lanjut → dashboard/laporan → pengujian → dokumentasi/pengumpulan. Bangun infrastruktur audit sejak awal dan integrasikan pada tiap fitur, jangan baru mengingatnya di akhir.
+Untuk setiap task tuliskan ID, tujuan, prasyarat, ruang lingkup, file/modul yang diperkirakan terdampak, langkah implementasi, acceptance criteria yang terukur, cara verifikasi, dan definition of done. Hindari task sebesar “bangun seluruh backend”. Task harus dapat dikerjakan dan diuji sebagai satu bagian kecil yang utuh.
+
+F. ANTIGRAVITY_PROMPTS.md
+Buat prompt pembuka dan prompt per milestone yang dapat disalin ke Antigravity. Minta agent membaca dokumen rencana dan codebase yang tersedia, memeriksa environment, menyusun implementation plan, mengimplementasikan task, menjalankan verifikasi, serta memberikan walkthrough hasil. Jangan mengasumsikan situs ini tersambung otomatis ke Antigravity.
+Setiap prompt mencantumkan konteks, tujuan, batas perubahan, dokumen rujukan, acceptance criteria, tes, dan ringkasan hasil yang harus dilaporkan. Sertakan format catatan progres agar sesi baru tahu task selesai, task berikutnya, keputusan teknis, masalah tersisa, dan perintah menjalankan aplikasi. Jangan mengaku tes lulus tanpa hasil eksekusi atau mengarang screenshot/hasil pengujian.
+
+G. TEST_PLAN.md
+Test case dengan ID, prasyarat/data uji, langkah, expected result, dan kolom actual result/status yang masih kosong sampai benar-benar diuji. Cakup login salah, akses URL role lain, akses data penghuni lain, CRUD dan validasi tiga master, kamar tidak tersedia, penempatan bersamaan, pembayaran tidak sesuai/duplikat, tagihan belum bayar, perubahan tarif dan histori, keluhan ditindaklanjuti/ditutup, filter/total laporan, KPI setelah transaksi, audit trail, serta persistensi data setelah aplikasi dimulai ulang. Utamakan tes integrasi untuk transaksi dan otorisasi, ditambah uji alur utama melalui UI.
+
+H. DEMO_AND_SUBMISSION.md
+Checklist hasil wajib: source code, database .sql yang sudah diuji impor, link repository GitHub, dan dokumentasi sistem. Dokumentasi mencakup masalah/tujuan, diagram proses bisnis, analisis kebutuhan pengguna, ERD, daftar pengguna/hak akses, master data, transaksi, dashboard/laporan, audit trail, dan test case. Tambahkan README instalasi Windows, akun demo sintetis setiap role, data contoh lintas beberapa periode, cara reset data demo yang aman, dan petunjuk backup/restore. Jangan membuat data pribadi nyata sebagai seed.
+Skenario demo harus mengikuti urutan dosen: masalah/tujuan → proses bisnis → pengguna/hak akses → login role berbeda → tambah/edit/cari/hapus master → transaksi selesai → perubahan data → dashboard berubah → laporan periode tertentu → audit trail. Sertakan data input dan perubahan yang diharapkan agar demo dapat diulang. Screenshot dokumentasi dibuat dari aplikasi nyata setelah implementasi.
+
+I. LEARNING_AND_TEAM_PLAN.md
+Usulkan pembagian tugas seimbang untuk maksimal dua mahasiswa dengan saling review; jangan menyatakan pembagian tersebut sudah disepakati. Kedua anggota harus memahami keseluruhan sistem. Sertakan penjelasan sederhana alur transaksi, relasi database, perhitungan laporan, serta pertanyaan latihan presentasi dengan poin jawaban. Buat estimasi per milestone sebagai asumsi, bukan deadline resmi karena tanggal pengumpulan belum diberikan.
+
+10. CARA MENANGANI INFORMASI YANG BELUM ADA
+
+Jangan menanyakan ulang hal yang sudah jelas dalam prompt. Untuk keputusan yang dapat diubah, pilih default sederhana dan catat alasannya. Untuk hal yang benar-benar mengubah ruang lingkup, ajukan paling banyak lima pertanyaan penting sambil tetap menyusun draft plan berdasarkan asumsi yang dinyatakan. Jangan mengarang ketentuan kampus, hasil observasi lapangan, persetujuan dosen, deadline, atau kemampuan platform yang belum diverifikasi.
+
+Mulailah dengan ringkasan pemahaman proyek dan daftar keputusan/asumsi utama. Lanjutkan dengan rencana lengkap yang dapat dieksekusi coding agent. Sebelum menyelesaikan, lakukan pemeriksaan cakupan terhadap seluruh persyaratan TA, tiga proses bisnis, dan 12 kebutuhan IRM. Targetnya adalah aplikasi SIM Kos yang benar-benar berfungsi, konsisten dengan laporan, dapat diuji, dapat dipresentasikan, dan dapat dijelaskan oleh mahasiswa.
