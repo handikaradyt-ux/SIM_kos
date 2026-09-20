@@ -1,0 +1,71 @@
+/* ==========================================================================
+   Print Stylesheet - SIM Kos
+   Digunakan untuk mode cetak halaman laporan & bukti transaksi
+   ========================================================================== */
+
+@media print {
+    /* Sembunyikan elemen navigasi dan kontrol interaktif */
+    .simkos-sidebar,
+    .simkos-header,
+    .simkos-mobile-nav,
+    .btn,
+    .alert,
+    .no-print,
+    nav,
+    header,
+    footer,
+    .offcanvas,
+    .offcanvas-backdrop {
+        display: none !important;
+    }
+
+    /* Pastikan layout cetak memenuhi kertas secara penuh */
+    body {
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif !important;
+        font-size: 11pt !important;
+        line-height: 1.4 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .simkos-main-content,
+    .container,
+    .container-fluid {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        border: none !important;
+    }
+
+    .card {
+        border: 1px solid #dee2e6 !important;
+        box-shadow: none !important;
+        break-inside: avoid;
+    }
+
+    /* Tabel dengan kontras tinggi dan border jelas */
+    table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+    }
+
+    th, td {
+        border: 1px solid #333333 !important;
+        padding: 6px 8px !important;
+        color: #000000 !important;
+    }
+
+    /* Pencegahan pemotongan baris di tengah halaman cetak */
+    tr {
+        break-inside: avoid;
+    }
+
+    a {
+        text-decoration: none !important;
+        color: #000000 !important;
+    }
+}

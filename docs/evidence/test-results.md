@@ -21,6 +21,7 @@ Dokumen ini merekam hasil aktual pengujian otomatis dan manual Sistem Informasi 
 | **TC-31** | Constraint skema database komprehensif: <br>1. Penolakan duplikasi `roles.code` (1062)<br>2. Penolakan duplikasi `residents.user_id` (1062)<br>3. Penolakan duplikasi `payments.receipt_number` pada invoice berbeda (1062)<br>4. Penolakan `payments.invoice_id` tidak ada dengan field lain valid (1452)<br>5. Penolakan penghapusan parent ter-referensi membuktikan RESTRICT menjaga histori (1451)<br>6. Penolakan CHECK constraint spesifik via MySQL error code 3819 tanpa menerima keyword generik 'CONSTRAINT'<br>7. Generated unique columns untuk active placement & valid payment (insert & update bentrok) | Seluruh 18 skenario pengujian lulus pada MySQL 8.0.30. FK insert ditolak (1452), FK parent delete ditolak demi proteksi histori (1451), Duplikat ditolak (1062), CHECK spesifik ditolak (3819 dengan nama constraint eksak), generated unique column aktif/valid mencegah bentrok sekaligus mengizinkan multi ended/void, update bentrok ditolak. | 19 September 2026 | **LULUS** | `php vendor/bin/phpunit --testdox tests/Feature/DatabaseConstraintTest.php` (18 tests, 86 assertions) |
 | **TC-24** | Fondasi Audit: Identitas pelaku server-side, snapshot nama independen, aktor sistem eksplisit, waktu server UTC & display Asia/Jakarta, kontrak changes `{"before": ..., "after": ...}`, dan penyaringan allowlist/sensitif/nested. | Terverifikasi pada tingkat fondasi: Snapshot nama `actor_name` tidak berubah saat nama user berganti, `logSystem()` mencatat `actor_id = null` dan `actor_name = 'Sistem'`, waktu UTC deterministik dengan frozen time, field sensitif (password, token, cookie) dan array bersarang pada kolom skalar tersaring bersih. | 19 September 2026 | **LULUS (Fondasi)** | `php vendor/bin/phpunit --testdox tests/Feature/AuditServiceTest.php` (6 tests spesifik) |
 | **TC-32** | Fondasi Rollback Audit: Atomisitas mutasi bisnis dan log audit dalam transaksi yang sama jika audit gagal atau operasi lanjutan gagal. | Terverifikasi pada tingkat fondasi: Jika audit gagal di database nyata (MySQL error 1406 data too long), mutasi bisnis ikut rollback penuh (terbukti via DB missing). Jika audit berhasil lalu operasi lanjutan gagal, seluruh mutasi dan audit ikut rollback. Jika mutasi gagal sebelum audit, total count log audit terbukti tetap sama dan mutasi tidak tersimpan. | 19 September 2026 | **LULUS (Fondasi)** | `php vendor/bin/phpunit --testdox tests/Feature/AuditServiceTest.php` (4 tests transaksional) |
+| **TC-29** | Layout responsif Bootstrap 5 lokal, navigasi per role (Admin, Pemilik, Penghuni), pencegahan dummy route/badge fase, navigasi terbatas password sementara, aksesibilitas form (aria-invalid, aria-describedby, no password in value/old), uji visual desktop 1366×768 dan mobile 390px, uji keyboard offcanvas (buka, Escape, pengembalian fokus), dan verifikasi build offline tanpa ketergantungan CDN/dev server/public-hot. | 1. Layout Bootstrap 5 terintegrasi murni via npm/Vite lokal tanpa Tailwind/CDN.<br>2. Navigasi role hanya mengarah ke route riil; menu fitur mendatang berlabel non-interaktif 'Belum tersedia' tanpa href='#' atau badge fase.<br>3. Dashboard awal untuk Admin, Pemilik, dan Penghuni netral menyatakan informasi belum tersedia tanpa klaim data palsu dan tanpa query bisnis prematur sebelum T18.<br>4. Password fields tidak pernah memuat atribut value atau old().<br>5. Input terhubung aria-describedby, label terhubung id, dan aria-invalid='true' saat error validasi.<br>6. Pengguna password sementara hanya melihat navigasi terbatas (Ganti Password dan Logout) tanpa loop redirect.<br>7. Pengujian visual pada desktop 1366×768 dan mobile 390px terverifikasi nyata.<br>8. Pengujian offcanvas mobile dengan keyboard: buka menu, tutup via Escape, fokus kembali ke tombol toggle teruji sukses.<br>9. Build offline lulus: `public/build` berisi manifes dan bundel lokal, `public/hot` tidak ada, localhost dapat diakses normal. | 20 September 2026 | **LULUS** | `tests/Feature/LayoutNavigationTest.php` (6 tests, 49 assertions) & 13 screenshots di `docs/evidence/t05/` |
 
 ---
 
@@ -121,6 +122,27 @@ OK (24 tests, 113 assertions)
 
 ---
 
+## Log Rinci Eksekusi TC-29 (`LayoutNavigationTest`)
+
+```text
+PHPUnit 12.5.35 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.3.32
+Configuration: C:\SEMESTER 5\SISTEM INFORMASI PRAKTIKUM\TA\phpunit.xml
+
+Layout Navigation (Tests\Feature\LayoutNavigation)
+ ✔ Login page renders accessible inputs without password value
+ ✔ Login validation error renders aria invalid and preserves no password value
+ ✔ Admin dashboard renders role layout and neutral empty state
+ ✔ Owner dashboard renders role layout and neutral empty state
+ ✔ Resident portal renders role layout and neutral empty state
+ ✔ User with temporary password sees restricted navigation
+
+OK (6 tests, 49 assertions)
+```
+
+---
+
 ## Log Seluruh Suite Pengujian (`php artisan test`)
 
 ```text
@@ -165,6 +187,14 @@ OK (24 tests, 113 assertions)
    PASS  Tests\Feature\AuthTest
   ✓ 24 auth, authorization, policy, session, password & seeder tests passed
 
-  Tests:    54 passed (247 assertions)
-  Duration: 3.89s
+   PASS  Tests\Feature\LayoutNavigationTest
+  ✓ login page renders accessible inputs without password value
+  ✓ login validation error renders aria invalid and preserves no password value
+  ✓ admin dashboard renders role layout and neutral empty state
+  ✓ owner dashboard renders role layout and neutral empty state
+  ✓ resident portal renders role layout and neutral empty state
+  ✓ user with temporary password sees restricted navigation
+
+  Tests:    60 passed (296 assertions)
+  Duration: 5.35s
 ```

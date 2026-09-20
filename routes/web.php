@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PasswordController;
+use App\Http\Controllers\RoomController;
 use App\Models\Resident;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -54,6 +55,11 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/portal', function () {
             return view('resident.portal');
         })->middleware('role:resident')->name('resident.portal');
+
+        // Master Kamar (Room Management)
+        Route::resource('rooms', RoomController::class);
+        Route::post('/rooms/{room}/archive', [RoomController::class, 'archive'])->name('rooms.archive');
+        Route::post('/rooms/{room}/unarchive', [RoomController::class, 'unarchive'])->name('rooms.unarchive');
     });
 });
 

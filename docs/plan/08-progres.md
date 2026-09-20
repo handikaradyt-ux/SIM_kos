@@ -2,17 +2,17 @@
 
 ## Status terkini
 
-- **Progres Implementasi**: Task T01, T02, T03, dan T04 telah SELESAI. Task T05–T24 belum dimulai.
+- **Progres Implementasi**: Task T01, T02, T03, T04, dan T05 telah SELESAI. Task T06–T24 belum dimulai.
 - **Environment**: PHP 8.3.32 (cli), Composer 2.10.2, Node v24.18.0, npm 11.16.0, Git 2.55.0, MySQL 8.0.30 (Laragon). Ekstensi `intl` telah aktif.
 - **Pemisahan Status Database Nyata**:
-  - **Database Uji (`sim_kos_test`)**: Dimigrasikan penuh (12 migrasi) dan di-seed dengan `RoleSeeder` dan `UserSeeder`. Dilindungi oleh database guard pada `tests/TestCase.php`. Terbukti lulus seluruh pengujian otomatis: TC-31 (18 tests, 86 assertions), TC-24/TC-32 fondasi (10 tests, 46 assertions), TC-01–TC-05 (24 tests, 113 assertions), total suite 54 tests (247 assertions).
+  - **Database Uji (`sim_kos_test`)**: Dimigrasikan penuh (12 migrasi) dan di-seed dengan `RoleSeeder` dan `UserSeeder`. Dilindungi oleh database guard pada `tests/TestCase.php`. Terbukti lulus seluruh pengujian otomatis: TC-31 (18 tests, 86 assertions), TC-24/TC-32 fondasi (10 tests, 46 assertions), TC-01–TC-05 (24 tests, 113 assertions), TC-29 (6 tests, 49 assertions), total suite 60 tests (296 assertions).
   - **Database Aplikasi (`sim_kos`)**: Diverifikasi koneksi aktual dan tabel awal (0 tabel), lalu dimigrasikan normal melalui `php artisan migrate` (12 migrasi `Ran` tanpa reset) dan di-seed dengan `DatabaseSeeder` (`RoleSeeder` dan `UserSeeder` idempoten). Akun demo tersimpan aman dengan password dari variabel `.env` lokal tanpa hardcoding dan tanpa fallback string di kode sumber.
-- **Automated Tests**: 54 passed, 247 assertions (0 failure) pada suite pengujian `sim_kos_test`.
-- **Frontend**: Halaman login dan form ganti password Blade fungsional dengan proteksi CSRF, visualisasi status, dan alert session.
+- **Automated Tests**: 60 passed, 296 assertions (0 failure) pada suite pengujian `sim_kos_test`.
+- **Frontend**: Layout bersama Bootstrap 5 lokal via Vite/npm, navigasi role terproteksi (Admin, Pemilik, Penghuni), navigasi terbatas password sementara, aset offline terkompilasi (CSS 236 kB, JS 79 kB tanpa Vite dev server / `public/hot`), visualisasi login/dashboard/ganti password responsif desktop 1366×768 & mobile 390px, pengujian keyboard offcanvas (buka, Escape, fokus kembali).
 
 ## Langkah berikut
 
-Task T04 telah selesai secara penuh. Langkah berikutnya adalah mempersiapkan implementasi Task **T05: Layout Blade Lengkap & Tampilan Bootstrap 5** (Navbar multi-role sesuai role, alert flash message responsif, styling halaman login & dashboard responsif; TC-01–05 tampilan UI).
+Task T05 telah selesai secara penuh. Langkah berikutnya adalah mempersiapkan implementasi Task **T06: Master Kamar** (CRUD kamar, nomor kamar unik, tarif bulanan, status kamar terisi/kosong; TC-06).
 
 ## Tabel progres
 
@@ -22,7 +22,7 @@ Task T04 telah selesai secara penuh. Langkah berikutnya adalah mempersiapkan imp
 | 1 Fondasi | T02 | Selesai | docs/evidence/test-results.md (TC-31: 18 tests, 86 assertions) |
 | 1 Fondasi | T03 | Selesai | docs/audit-service.md, docs/evidence/test-results.md (TC-24 & TC-32 Fondasi: 10 tests, 46 assertions) |
 | 1 Fondasi | T04 | Selesai | docs/evidence/test-results.md (TC-01–TC-05: 24 tests, 113 assertions) |
-| 1 Fondasi | T05 | Belum dimulai | — |
+| 1 Fondasi | T05 | Selesai | docs/evidence/t05-walkthrough.md, docs/evidence/t05/ (13 screenshot nyata), test-results.md (TC-29: 6 tests, 49 assertions) |
 | 2 Data/penempatan | T06–T11 | Belum dimulai | — |
 | 3 Pembayaran | T12–T15 | Belum dimulai | — |
 | 4 Keluhan | T16–T17 | Belum dimulai | — |
@@ -246,5 +246,77 @@ Task berikutnya:
   - Jalankan seluruh suite tes: `php artisan test`
   - Buka halaman login di browser: `http://127.0.0.1:8000/login`
 - **Task berikutnya**:
-  - T05: Layout Blade Lengkap & Tampilan Bootstrap 5 (Navbar multi-role, feedback alert responsif, template visual terpadu; TC-01–05 tampilan UI).
+  - T05: SELESAI (lanjut ke T06).
+
+### T05 - Layout Blade, Bootstrap 5 Lokal, Navigasi Role, dan Komponen Bersama
+- **Tanggal**: 20 September 2026
+- **Task dan status**: T05 SELESAI
+- **Ringkasan perubahan**:
+  - Menghapus dependensi Tailwind CSS bawaan (`@tailwindcss/vite`, `tailwindcss`) dan memasang `bootstrap@^5.3.8` serta `@popperjs/core@^2.11.8` via npm secara lokal tanpa CDN.
+  - Memperbarui `vite.config.js` untuk build aset lokal murni tanpa font atau plugin eksternal.
+  - Menyusun `resources/css/print.css` dan `resources/css/app.css` dengan urutan `@import` di baris teratas sebelum aturan CSS biasa, mendefinisikan token tema SIM Kos (navy `#0f172a`, latar `#f8fafc`, aksen teal `#0d9488`, dan ring aksesibilitas keyboard).
+  - Mengompilasi aset frontend via `npm run build` (CSS 236 kB, JS 79 kB). Memastikan `public/hot` tidak ada agar aplikasi 100% menggunakan aset lokal offline.
+  - Membuat komponen antarmuka bersama berstandar aksesibilitas (`resources/views/components/`):
+    - `x-input`: menghubungkan label, helper, dan error feedback via `id` dan `aria-describedby`; mengaktifkan `aria-invalid="true"` saat validasi gagal; secara ketat **tidak mengisi atribut value atau old()** pada kolom kata sandi.
+    - `x-alert`: visualisasi alert flash session Bootstrap (`status`, `success`, `error`, `warning`).
+    - `x-button`: tombol teal dan aksi antarmuka terstandar.
+    - `x-badge`: badge role (`admin`, `owner`, `resident`) dengan contrast yang jelas.
+    - `x-empty-state`: placeholder informatif netral ("Informasi Belum Tersedia") tanpa klaim kosong palsu dan tanpa query database prematur sebelum T18.
+    - `x-table-card`: pembungkus tabel responsif.
+  - Membangun layout dan partials bersama (`resources/views/layouts/`):
+    - `layouts.app`: layout terpadu dengan header sticky, sidebar desktop, drawer offcanvas mobile, dan footer.
+    - `layouts.guest`: layout halaman tamu / login.
+    - `layouts.partials.sidebar-nav`: navigasi role dinamis (Admin, Pemilik, Penghuni). Fitur mendatang ditampilkan sebagai teks non-interaktif berlabel **"Belum tersedia"** tanpa `href="#"`, tanpa rute dummy, dan tanpa badge fase. Menampilkan **navigasi terbatas** (hanya Ganti Password dan Logout) bagi pengguna dengan password sementara.
+    - `layouts.partials.header`: topbar dengan toggle drawer mobile, role badge, dan dropdown akun (ganti password dan logout POST).
+  - Merefaktor halaman autentikasi dan dashboard awal:
+    - `resources/views/auth/login.blade.php`: menggunakan `layouts.guest` dan komponen bersama.
+    - `resources/views/auth/change-password.blade.php`: menggunakan `layouts.app`, form logout terpisah yang valid HTML5, dan validasi feedback.
+    - `resources/views/admin/dashboard.blade.php`, `resources/views/owner/dashboard.blade.php`, `resources/views/resident/portal.blade.php`: menggunakan `layouts.app`, kartu profil role, dan empty state netral.
+  - Menulis test suite otomatis `tests/Feature/LayoutNavigationTest.php` (6 tests, 49 assertions) yang memverifikasi aksesibilitas input, penghindaran password value/old, pesan error dan `aria-invalid`, render layout tiap role, dan navigasi terbatas password sementara.
+- **File utama**:
+  - `package.json`, `package-lock.json`, `vite.config.js`
+  - `resources/css/app.css`, `resources/css/print.css`, `resources/js/app.js`
+  - `resources/views/components/input.blade.php`, `alert.blade.php`, `badge.blade.php`, `button.blade.php`, `empty-state.blade.php`, `table-card.blade.php`
+  - `resources/views/layouts/app.blade.php`, `guest.blade.php`
+  - `resources/views/layouts/partials/sidebar.blade.php`, `sidebar-nav.blade.php`, `header.blade.php`
+  - `resources/views/auth/login.blade.php`, `change-password.blade.php`
+  - `resources/views/admin/dashboard.blade.php`, `owner/dashboard.blade.php`, `resident/portal.blade.php`
+  - `tests/Feature/LayoutNavigationTest.php`
+  - `docs/evidence/t05-walkthrough.md`, `docs/evidence/t05/` (13 screenshot)
+- **Keputusan/asumsi yang berubah dan dampaknya**:
+  - *Menu Fitur Mendatang*: Tidak menggunakan badge fase (misalnya "Fase 2") dan tidak menggunakan `href="#"` atau route dummy, melainkan teks non-interaktif berlabel "Belum tersedia".
+  - *Dashboard Awal Netral*: Tidak mengklaim "belum ada data/tagihan/keluhan" tanpa query pembuktian; menggunakan pesan informatif netral bahwa fitur/data terkait akan tersedia pada implementasi modul bersangkutan demi mencegah pembuatan query bisnis sebelum T18.
+  - *Aksesibilitas Form*: Kolom password sama sekali tidak mengisi atribut `value` atau `old()` saat terjadi kegagalan validasi, demi mencegah kebocoran kredensial di DOM atau inspector.
+  - *Pemisahan Form Logout pada Change Password*: Memisahkan form logout keluar dari form update password menggunakan atribut HTML5 `form="logout-form"` untuk mencegah nested form yang melanggar standar HTML.
+- **Perintah verifikasi yang benar-benar dijalankan**:
+  - `npm run build` (Hasil: Sukses mengompilasi CSS 236 kB dan JS 79 kB dalam 216ms)
+  - `Test-Path "public/hot"` (Hasil: `False`, membuktikan penggunaan bundel offline lokal)
+  - `php vendor/bin/phpunit --testdox tests/Feature/LayoutNavigationTest.php` (Hasil: 6 tests, 49 assertions, seluruhnya lulus)
+  - `php artisan test` (Hasil: 60 passed, 296 assertions, 0 failure)
+  - Uji visual browser otomatis desktop 1366×768 dan mobile 390px pada server aktif `http://127.0.0.1:8000`:
+    - Login desktop & mobile
+    - Validasi error login (`aria-invalid="true"`, input password kosong)
+    - Admin dashboard desktop & mobile
+    - Mobile offcanvas menu (terbuka, ditutup via tombol Escape, dan fokus kembali ke tombol toggle)
+    - Ganti password desktop & alur logout
+    - Owner dashboard desktop & mobile
+    - User password sementara dengan navigasi terbatas
+    - Resident portal desktop & mobile
+- **Hasil dan lokasi bukti**:
+  - Walkthrough lengkap: [docs/evidence/t05-walkthrough.md](docs/evidence/t05-walkthrough.md)
+  - 13 Berkas screenshot nyata: `docs/evidence/t05/`
+  - Log rinci pengujian TC-29: [docs/evidence/test-results.md](docs/evidence/test-results.md)
+- **Hal yang belum diuji**:
+  - CRUD master bisnis (Kamar, Penghuni, Fasilitas) yang dijadwalkan pada Fase 2 (T06–T08).
+  - Tampilan grafik statistik dan metrik finansial bisnis yang dijadwalkan pada T18.
+- **Kendala tersisa**:
+  - Tidak ada kendala teknis. Seluruh kriteria T05 terpenuhi dengan sempurna.
+- **Cara menjalankan keadaan saat ini**:
+  - Jalankan build aset (jika belum): `npm run build`
+  - Jalankan server aplikasi: `php artisan serve`
+  - Jalankan test suite: `php artisan test`
+  - Akses aplikasi di browser: `http://127.0.0.1:8000/login`
+- **Task berikutnya**:
+  - T06: Master Kamar (CRUD kamar, nomor kamar unik, tarif bulanan, status kamar terisi/kosong; TC-06).
+
 

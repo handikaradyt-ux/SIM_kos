@@ -1,69 +1,73 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ganti Password - SIM Kos</title>
-    <style>
-        body { font-family: system-ui, -apple-system, sans-serif; background-color: #f8fafc; color: #1e293b; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
-        .card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 2rem; width: 100%; max-width: 450px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-        .title { font-size: 1.35rem; font-weight: 700; margin-bottom: 0.5rem; }
-        .subtitle { font-size: 0.875rem; color: #64748b; margin-bottom: 1.5rem; }
-        .form-group { margin-bottom: 1rem; }
-        label { display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.35rem; }
-        input[type="password"] { width: 100%; box-sizing: border-box; padding: 0.6rem 0.75rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.95rem; }
-        .btn-submit { width: 100%; padding: 0.75rem; background: #0f172a; color: #ffffff; border: none; border-radius: 6px; font-size: 0.95rem; font-weight: 600; cursor: pointer; }
-        .btn-submit:hover { background: #1e293b; }
-        .alert { padding: 0.75rem 1rem; border-radius: 6px; font-size: 0.875rem; margin-bottom: 1rem; }
-        .alert-danger { background-color: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
-        .alert-warning { background-color: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
-        .logout-link { display: block; text-align: center; margin-top: 1rem; font-size: 0.875rem; color: #64748b; text-decoration: none; }
-    </style>
-</head>
-<body>
-    <div class="card">
-        <h1 class="title">Ganti Password</h1>
-        <p class="subtitle">Perbarui password akun Anda (minimal 12 karakter).</p>
+@extends('layouts.app')
 
-        @if(session('warning'))
-            <div class="alert alert-warning">{{ session('warning') }}</div>
-        @endif
+@section('title', 'Ganti Kata Sandi')
+@section('page_title', 'Ganti Kata Sandi')
+@section('page_subtitle', 'Kelola dan perbarui kata sandi akun Anda')
 
-        @if($errors->any())
-            <div class="alert alert-danger">
-                @foreach($errors->all() as $error)
-                    <div>{{ $error }}</div>
-                @endforeach
+@section('content')
+<div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+        <div class="simkos-card shadow-sm">
+            <div class="simkos-card-header">
+                <span>Formulir Perubahan Kata Sandi</span>
             </div>
-        @endif
+            <div class="simkos-card-body">
+                @if(auth()->user()->must_change_password)
+                    <div class="alert alert-warning py-2 px-3 small mb-3" role="alert">
+                        <strong>Perhatian:</strong> Akun Anda saat ini menggunakan kata sandi sementara. Anda wajib memperbarui kata sandi sebelum dapat mengakses fitur sistem lainnya.
+                    </div>
+                @endif
 
-        <form method="POST" action="{{ route('password.update') }}">
-            @csrf
+                <form method="POST" action="{{ route('password.update') }}" novalidate>
+                    @csrf
 
-            <div class="form-group">
-                <label for="current_password">Password Saat Ini</label>
-                <input id="current_password" type="password" name="current_password" required autocomplete="current-password">
+                    {{-- Kata Sandi Saat Ini --}}
+                    <x-input
+                        name="current_password"
+                        label="Kata Sandi Saat Ini"
+                        type="password"
+                        :required="true"
+                        :autofocus="true"
+                        autocomplete="current-password"
+                        helper="Masukkan kata sandi yang sedang Anda gunakan saat ini."
+                    />
+
+                    {{-- Kata Sandi Baru --}}
+                    <x-input
+                        name="password"
+                        label="Kata Sandi Baru"
+                        type="password"
+                        :required="true"
+                        autocomplete="new-password"
+                        helper="Panjang kata sandi baru minimal 12 karakter."
+                    />
+
+                    {{-- Konfirmasi Kata Sandi Baru --}}
+                    <x-input
+                        name="password_confirmation"
+                        label="Konfirmasi Kata Sandi Baru"
+                        type="password"
+                        :required="true"
+                        autocomplete="new-password"
+                        helper="Ketik ulang kata sandi baru untuk memastikan kecocokan."
+                    />
+
+                    <div class="d-flex align-items-center justify-content-between pt-2">
+                        <x-button type="submit" variant="teal" class="px-4">
+                            Simpan Kata Sandi Baru
+                        </x-button>
+
+                        <button type="submit" form="logout-form" class="btn btn-link text-muted small text-decoration-none" aria-label="Batal dan keluar dari sistem">
+                            Batal &amp; Keluar
+                        </button>
+                    </div>
+                </form>
+
+                <form id="logout-form" method="POST" action="{{ route('logout') }}" class="d-none">
+                    @csrf
+                </form>
             </div>
-
-            <div class="form-group">
-                <label for="password">Password Baru (Minimal 12 Karakter)</label>
-                <input id="password" type="password" name="password" required autocomplete="new-password">
-            </div>
-
-            <div class="form-group">
-                <label for="password_confirmation">Konfirmasi Password Baru</label>
-                <input id="password_confirmation" type="password" name="password_confirmation" required autocomplete="new-password">
-            </div>
-
-            <button type="submit" class="btn-submit">Simpan Password Baru</button>
-        </form>
-
-        <form method="POST" action="{{ route('logout') }}" style="margin-top: 1rem;">
-            @csrf
-            <button type="submit" style="background: none; border: none; color: #64748b; font-size: 0.875rem; width: 100%; cursor: pointer; text-decoration: underline;">
-                Keluar (Logout)
-            </button>
-        </form>
+        </div>
     </div>
-</body>
-</html>
+</div>
+@endsection
