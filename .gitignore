@@ -28,3 +28,6 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 /tmp
+
+# Arsip prompt lama, hanya disimpan lokal
+/arsip-lokal/
