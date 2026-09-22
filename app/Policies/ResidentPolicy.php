@@ -59,10 +59,65 @@ class ResidentPolicy
     }
 
     /**
-     * Determine whether the user can delete/archive the resident.
-     * Only Admin can delete/archive residents.
+     * Determine whether the user can view the specific resident profile in master management.
+     * Only Admin and Owner can view residents in the master section.
+     * Resident role is strictly forbidden (HTTP 403), even when trying to access their own ID via master.
+     */
+    public function viewMaster(User $user, ?Resident $resident = null): bool
+    {
+        return in_array($user->role?->code, ['admin', 'owner'], true);
+    }
+
+    /**
+     * Determine whether the user can delete the resident profile.
+     * Only Admin can delete residents.
      */
     public function delete(User $user, Resident $resident): bool
+    {
+        return $user->role?->code === 'admin';
+    }
+
+    /**
+     * Determine whether the user can archive the resident.
+     * Only Admin can archive residents.
+     */
+    public function archive(User $user, Resident $resident): bool
+    {
+        return $user->role?->code === 'admin';
+    }
+
+    /**
+     * Determine whether the user can unarchive the resident.
+     * Only Admin can unarchive residents.
+     */
+    public function unarchive(User $user, Resident $resident): bool
+    {
+        return $user->role?->code === 'admin';
+    }
+
+    /**
+     * Determine whether the user can activate the resident account.
+     * Only Admin can activate resident accounts.
+     */
+    public function activate(User $user, Resident $resident): bool
+    {
+        return $user->role?->code === 'admin';
+    }
+
+    /**
+     * Determine whether the user can deactivate the resident account.
+     * Only Admin can deactivate resident accounts.
+     */
+    public function deactivate(User $user, Resident $resident): bool
+    {
+        return $user->role?->code === 'admin';
+    }
+
+    /**
+     * Determine whether the user can reset the temporary password for resident account.
+     * Only Admin can reset resident passwords.
+     */
+    public function resetPassword(User $user, Resident $resident): bool
     {
         return $user->role?->code === 'admin';
     }

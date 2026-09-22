@@ -7,11 +7,14 @@ use App\Http\Requests\Room\UpdateRoomRequest;
 use App\Models\Room;
 use App\Services\AuditService;
 use DomainException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class RoomController extends Controller
@@ -23,17 +26,47 @@ class RoomController extends Controller
     /**
      * Display a listing of rooms with search, filters, and pagination.
      */
-    public function index(Request $request): View
+    public function index(Request $request): View|RedirectResponse|JsonResponse
     {
         Gate::authorize('viewAny', Room::class);
 
+        // Validate query parameters before casting to reject array inputs and invalid filters gracefully
+        $validator = Validator::make($request->query(), [
+            'search' => ['nullable', 'string', 'max:100'],
+            'tab' => ['nullable', 'string', Rule::in(['active', 'archived', 'all'])],
+            'occupancy' => ['nullable', 'string', Rule::in(['all', 'occupied', 'vacant'])],
+            'per_page' => ['nullable', Rule::in([10, 25, 50, '10', '25', '50'])],
+        ], [
+            'search.string' => 'Parameter pencarian harus berupa teks.',
+            'search.max' => 'Parameter pencarian maksimal 100 karakter.',
+            'tab.in' => 'Tab filter yang dipilih tidak valid.',
+            'tab.string' => 'Parameter tab harus berupa teks.',
+            'occupancy.in' => 'Filter status hunian yang dipilih tidak valid.',
+            'occupancy.string' => 'Parameter hunian harus berupa teks.',
+            'per_page.in' => 'Batas data per halaman harus 10, 25, atau 50.',
+        ]);
+
+        if ($validator->fails()) {
+            if ($request->expectsJson()) {
+                return response()->json(['errors' => $validator->errors()], 422);
+            }
+
+            return redirect()->route('rooms.index')
+                ->withErrors($validator);
+        }
+
+        $validated = $validator->validated();
+
+        // Eager-load references and existence checks to completely eliminate N+1 queries during row rendering
         $query = Room::query()
             ->withExists(['activePlacement'])
+            ->withExists(['placements as has_placements'])
             ->withCount('facilities')
+            ->withExists(['facilities as has_facilities'])
             ->with(['activePlacement.resident']);
 
         // Grouped OR search condition to avoid bypassing tab/occupancy filters
-        $search = trim((string) $request->input('search', ''));
+        $search = isset($validated['search']) ? trim($validated['search']) : '';
         if ($search !== '') {
             $query->where(function ($q) use ($search) {
                 $q->where('number', 'like', "%{$search}%")
@@ -42,7 +75,7 @@ class RoomController extends Controller
         }
 
         // Archive status tab filter
-        $tab = (string) $request->input('tab', 'active');
+        $tab = $validated['tab'] ?? 'active';
         if ($tab === 'active') {
             $query->active();
         } elseif ($tab === 'archived') {
@@ -50,7 +83,7 @@ class RoomController extends Controller
         }
 
         // Occupancy status filter
-        $occupancy = (string) $request->input('occupancy', 'all');
+        $occupancy = $validated['occupancy'] ?? 'all';
         if ($occupancy === 'occupied') {
             $query->occupied();
         } elseif ($occupancy === 'vacant') {
@@ -58,10 +91,7 @@ class RoomController extends Controller
         }
 
         // Strictly validated pagination limit
-        $perPage = (int) $request->input('per_page', 10);
-        if (!in_array($perPage, [10, 25, 50], true)) {
-            $perPage = 10;
-        }
+        $perPage = isset($validated['per_page']) ? (int) $validated['per_page'] : 10;
 
         $rooms = $query->orderBy('number', 'asc')
             ->paginate($perPage)
@@ -128,7 +158,8 @@ class RoomController extends Controller
         $room->load([
             'activePlacement.resident',
             'facilities',
-            'placements.resident' => fn ($q) => $q->orderBy('started_on', 'desc'),
+            'placements' => fn ($q) => $q->orderBy('started_on', 'desc'),
+            'placements.resident',
         ]);
 
         $canBeDeleted = $room->canBeDeleted();

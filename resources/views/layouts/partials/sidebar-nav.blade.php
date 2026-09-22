@@ -49,22 +49,19 @@
                 </a>
             </li>
             <li>
-                <span class="simkos-nav-item-disabled">
+                <a href="{{ route('residents.index') }}" class="simkos-nav-link {{ request()->routeIs('residents.*') ? 'active' : '' }}">
                     <span>Penghuni</span>
-                    <span class="simkos-badge-unavailable">Belum tersedia</span>
-                </span>
+                </a>
             </li>
             <li>
-                <span class="simkos-nav-item-disabled">
+                <a href="{{ route('facilities.index') }}" class="simkos-nav-link {{ request()->routeIs('facilities.*') ? 'active' : '' }}">
                     <span>Fasilitas</span>
-                    <span class="simkos-badge-unavailable">Belum tersedia</span>
-                </span>
+                </a>
             </li>
             <li>
-                <span class="simkos-nav-item-disabled">
+                <a href="{{ route('placements.index') }}" class="simkos-nav-link {{ request()->routeIs('placements.*') ? 'active' : '' }}">
                     <span>Penempatan</span>
-                    <span class="simkos-badge-unavailable">Belum tersedia</span>
-                </span>
+                </a>
             </li>
         </ul>
 
@@ -132,16 +129,19 @@
                 </a>
             </li>
             <li>
-                <span class="simkos-nav-item-disabled">
+                <a href="{{ route('residents.index') }}" class="simkos-nav-link {{ request()->routeIs('residents.*') ? 'active' : '' }}">
                     <span>Data Penghuni</span>
-                    <span class="simkos-badge-unavailable">Belum tersedia</span>
-                </span>
+                </a>
             </li>
             <li>
-                <span class="simkos-nav-item-disabled">
+                <a href="{{ route('facilities.index') }}" class="simkos-nav-link {{ request()->routeIs('facilities.*') ? 'active' : '' }}">
                     <span>Data Fasilitas</span>
-                    <span class="simkos-badge-unavailable">Belum tersedia</span>
-                </span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('placements.index') }}" class="simkos-nav-link {{ request()->routeIs('placements.*') ? 'active' : '' }}">
+                    <span>Data Penempatan</span>
+                </a>
             </li>
         </ul>
 

@@ -45,8 +45,9 @@ class LayoutNavigationTest extends TestCase
         $response->assertSee('type="password"', false);
         // Ensure no hardcoded password value attribute exists
         $response->assertDontSee('name="password" value=', false);
-        // Ensure local build asset is referenced
-        $response->assertSee('/build/assets/app-', false);
+        // Ensure local build asset or Vite dev server client is referenced
+        $hasViteAssets = str_contains($response->getContent(), '/build/assets/app-') || str_contains($response->getContent(), '@vite/client');
+        $this->assertTrue($hasViteAssets, 'Asset Vite tidak ditemukan pada login page.');
         $response->assertDontSee('cdn.jsdelivr.net', false);
         $response->assertDontSee('fonts.bunny.net', false);
     }
@@ -83,8 +84,9 @@ class LayoutNavigationTest extends TestCase
         $response->assertDontSee('href="#"', false);
         // Ensure logout POST form is present
         $response->assertSee(route('logout'));
-        // Ensure local build assets are loaded
-        $response->assertSee('/build/assets/app-', false);
+        // Ensure local build assets or Vite dev server assets are loaded
+        $hasViteAssets = str_contains($response->getContent(), '/build/assets/app-') || str_contains($response->getContent(), '@vite/client');
+        $this->assertTrue($hasViteAssets, 'Asset Vite tidak ditemukan pada layout.');
     }
 
     public function test_owner_dashboard_renders_role_layout_and_neutral_empty_state(): void

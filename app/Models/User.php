@@ -36,7 +36,16 @@ class User extends Authenticatable
             'password' => 'hashed',
             'is_active' => 'boolean',
             'must_change_password' => 'boolean',
+            'session_version' => 'integer',
         ];
+    }
+
+    /**
+     * Get the session signature based on password hash and session version.
+     */
+    public function getSessionSignature(): string
+    {
+        return sha1($this->password . '|' . ($this->session_version ?? 1));
     }
 
     public function role(): BelongsTo

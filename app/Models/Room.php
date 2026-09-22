@@ -78,6 +78,14 @@ class Room extends Model
     }
 
     /**
+     * Check if the room is archived (method).
+     */
+    public function isArchived(): bool
+    {
+        return $this->archived_at !== null;
+    }
+
+    /**
      * Scope: Search room by number or type with grouped OR condition.
      */
     public function scopeSearch(Builder $query, ?string $term): Builder
@@ -130,10 +138,23 @@ class Room extends Model
 
     /**
      * Check if room has historical references (placements or facilities).
-     * Used to prevent physical DELETE when references exist.
+     * Uses eagerly loaded withExists/withCount attributes when present to eliminate N+1 queries.
+     * Evaluates live database references when attributes are not preloaded (e.g. within transactions).
      */
     public function hasHistoricalReferences(): bool
     {
+        $hasPlacements = array_key_exists('has_placements', $this->attributes)
+            ? (bool) $this->attributes['has_placements']
+            : null;
+
+        $hasFacilities = array_key_exists('has_facilities', $this->attributes)
+            ? (bool) $this->attributes['has_facilities']
+            : (isset($this->facilities_count) ? $this->facilities_count > 0 : null);
+
+        if ($hasPlacements !== null && $hasFacilities !== null) {
+            return $hasPlacements || $hasFacilities;
+        }
+
         return $this->placements()->exists() || $this->facilities()->exists();
     }
 

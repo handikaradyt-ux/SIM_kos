@@ -13,6 +13,7 @@ use App\Models\User;
 use App\Services\AuditService;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use RuntimeException;
 use Tests\TestCase;
@@ -52,13 +53,13 @@ class RoomTest extends TestCase
         ]);
     }
 
-    private function createResident(string $email = 'resident.test@example.test'): Resident
+    private function createResident(string $email = 'resident.test@example.test', string $name = 'Penghuni Test'): Resident
     {
         $user = $this->createUser('resident', $email);
 
         return Resident::create([
             'user_id' => $user->id,
-            'name' => 'Penghuni Test',
+            'name' => $name,
             'phone' => '081234567890',
             'origin_address' => 'Jl. Test No. 1',
         ]);
@@ -750,5 +751,260 @@ class RoomTest extends TestCase
 
         // Count must not increase
         $this->assertSame($auditCountBefore, $auditCountAfter);
+    }
+
+    // =========================================================================
+    // 8. Room Details (Show) with Active & Past Placements (Points 1 & 2)
+    // =========================================================================
+
+    public function test_admin_can_view_room_detail_with_active_and_ordered_past_placements(): void
+    {
+        $admin = $this->createUser('admin', 'admin.detail@example.test');
+        $room = $this->createRoom('DET-101', 'Deluxe AC', 1200000, 'Kamar lantai 1 hadap taman');
+
+        $res1 = $this->createResident('res1.det@example.test', 'Andi Permana');
+        $res2 = $this->createResident('res2.det@example.test', 'Budi Santoso');
+        $res3 = $this->createResident('res3.det@example.test', 'Citra Lestari');
+
+        // Past placement 1 (oldest: 2024)
+        Placement::create([
+            'resident_id' => $res1->id,
+            'room_id' => $room->id,
+            'started_on' => '2024-01-01',
+            'ended_on' => '2024-06-30',
+            'ended_by' => $admin->id,
+            'end_reason' => 'Selesai masa sewa',
+            'agreed_monthly_rate' => 1000000,
+            'created_by' => $admin->id,
+        ]);
+
+        // Past placement 2 (intermediate: 2025)
+        Placement::create([
+            'resident_id' => $res2->id,
+            'room_id' => $room->id,
+            'started_on' => '2025-01-01',
+            'ended_on' => '2025-12-31',
+            'ended_by' => $admin->id,
+            'end_reason' => 'Pindah tugas kerja',
+            'agreed_monthly_rate' => 1100000,
+            'created_by' => $admin->id,
+        ]);
+
+        // Active placement (newest: 2026, active)
+        Placement::create([
+            'resident_id' => $res3->id,
+            'room_id' => $room->id,
+            'started_on' => '2026-01-01',
+            'ended_on' => null,
+            'agreed_monthly_rate' => 1200000,
+            'created_by' => $admin->id,
+        ]);
+
+        // Add a facility
+        Facility::create([
+            'code' => 'FAC-DET-01',
+            'name' => 'Lemari Pakaian 2 Pintu',
+            'location_type' => 'room',
+            'room_id' => $room->id,
+            'condition' => 'good',
+        ]);
+
+        $response = $this->actingAs($admin)->get(route('rooms.show', $room));
+
+        $response->assertStatus(200);
+        $response->assertSee('Detail Kamar DET-101');
+        $response->assertSee('Deluxe AC');
+        $response->assertSee('Terisi');
+
+        // Active placement card shows active resident
+        $response->assertSee('Penempatan Aktif');
+        $response->assertSee('Citra Lestari');
+
+        // Facility table shows room facility
+        $response->assertSee('FAC-DET-01');
+        $response->assertSee('Lemari Pakaian 2 Pintu');
+
+        // Placement history table: resident names must appear in exact descending order of started_on
+        $response->assertSeeInOrder(['Citra Lestari', 'Budi Santoso', 'Andi Permana']);
+        $response->assertSeeInOrder(['01/01/2026', '01/01/2025', '01/01/2024']);
+
+        // Admin action buttons visible
+        $response->assertSee('Ubah Kamar');
+        $response->assertSee('Kamar terisi tidak dapat diarsipkan');
+        $response->assertSee('Penghapusan fisik dinonaktifkan (memiliki referensi data)');
+    }
+
+    public function test_owner_can_view_room_detail_as_readonly_with_placements_and_no_mutation_actions(): void
+    {
+        $owner = $this->createUser('owner', 'owner.detail@example.test');
+        $admin = $this->createUser('admin', 'admin.setup@example.test');
+        $room = $this->createRoom('DET-OWNER-01', 'Standard Single', 850000);
+
+        $res1 = $this->createResident('res1.own@example.test', 'Ahmad Fauzi');
+        $res2 = $this->createResident('res2.own@example.test', 'Dewi Lestari');
+
+        // Past placement
+        Placement::create([
+            'resident_id' => $res1->id,
+            'room_id' => $room->id,
+            'started_on' => '2025-06-01',
+            'ended_on' => '2025-11-30',
+            'ended_by' => $admin->id,
+            'end_reason' => 'Habis kontrak',
+            'agreed_monthly_rate' => 800000,
+            'created_by' => $admin->id,
+        ]);
+
+        // Active placement
+        Placement::create([
+            'resident_id' => $res2->id,
+            'room_id' => $room->id,
+            'started_on' => '2026-02-01',
+            'ended_on' => null,
+            'agreed_monthly_rate' => 850000,
+            'created_by' => $admin->id,
+        ]);
+
+        $response = $this->actingAs($owner)->get(route('rooms.show', $room));
+
+        $response->assertStatus(200);
+        $response->assertSee('Detail Kamar DET-OWNER-01');
+        $response->assertSee('Dewi Lestari');
+        $response->assertSee('Ahmad Fauzi');
+
+        // History in descending order
+        $response->assertSeeInOrder(['Dewi Lestari', 'Ahmad Fauzi']);
+        $response->assertSeeInOrder(['01/02/2026', '01/06/2025']);
+
+        // Owner MUST NOT see mutation buttons
+        $response->assertDontSee('Ubah Kamar');
+        $response->assertDontSee('Arsipkan Kamar Ini');
+        $response->assertDontSee('Hapus Permanen');
+        $response->assertSee('Daftar Kamar');
+    }
+
+    // =========================================================================
+    // 9. Query Parameter Validation & Array Input Rejection (Point 4)
+    // =========================================================================
+
+    public function test_index_rejects_array_inputs_gracefully_without_500_error(): void
+    {
+        $admin = $this->createUser('admin', 'admin.arrval@example.test');
+
+        // 1. Array search parameter
+        $res1 = $this->actingAs($admin)->get(route('rooms.index', ['search' => ['injected_array']]));
+        $res1->assertRedirect(route('rooms.index'));
+        $res1->assertSessionHasErrors(['search']);
+
+        // 2. Array tab parameter
+        $res2 = $this->actingAs($admin)->get(route('rooms.index', ['tab' => ['active', 'archived']]));
+        $res2->assertRedirect(route('rooms.index'));
+        $res2->assertSessionHasErrors(['tab']);
+
+        // 3. Array occupancy parameter
+        $res3 = $this->actingAs($admin)->get(route('rooms.index', ['occupancy' => ['occupied']]));
+        $res3->assertRedirect(route('rooms.index'));
+        $res3->assertSessionHasErrors(['occupancy']);
+
+        // 4. Array per_page parameter
+        $res4 = $this->actingAs($admin)->get(route('rooms.index', ['per_page' => [10, 25]]));
+        $res4->assertRedirect(route('rooms.index'));
+        $res4->assertSessionHasErrors(['per_page']);
+    }
+
+    public function test_index_rejects_invalid_filter_options(): void
+    {
+        $admin = $this->createUser('admin', 'admin.filtval@example.test');
+
+        // 1. Invalid tab
+        $res1 = $this->actingAs($admin)->get(route('rooms.index', ['tab' => 'unsupported_tab']));
+        $res1->assertRedirect(route('rooms.index'));
+        $res1->assertSessionHasErrors(['tab']);
+
+        // 2. Invalid occupancy
+        $res2 = $this->actingAs($admin)->get(route('rooms.index', ['occupancy' => 'random_status']));
+        $res2->assertRedirect(route('rooms.index'));
+        $res2->assertSessionHasErrors(['occupancy']);
+
+        // 3. Invalid per_page limit
+        $res3 = $this->actingAs($admin)->get(route('rooms.index', ['per_page' => 999]));
+        $res3->assertRedirect(route('rooms.index'));
+        $res3->assertSessionHasErrors(['per_page']);
+    }
+
+    public function test_index_accepts_valid_filters(): void
+    {
+        $admin = $this->createUser('admin', 'admin.validfilt@example.test');
+        $this->createRoom('VF-101', 'Deluxe Standard', 900000);
+
+        $response = $this->actingAs($admin)->get(route('rooms.index', [
+            'search' => 'VF',
+            'tab' => 'active',
+            'occupancy' => 'vacant',
+            'per_page' => 25,
+        ]));
+
+        $response->assertStatus(200);
+        $response->assertSessionHasNoErrors();
+        $response->assertSee('VF-101');
+    }
+
+    // =========================================================================
+    // 10. Verification of N+1 Query Elimination on Index (Point 3)
+    // =========================================================================
+
+    public function test_index_rendering_does_not_trigger_n_plus_one_queries_for_historical_references(): void
+    {
+        $admin = $this->createUser('admin', 'admin.nplusone@example.test');
+        $resident = $this->createResident('resident.n1@example.test');
+
+        // Create 6 rooms with varied relations
+        for ($i = 1; $i <= 6; $i++) {
+            $room = $this->createRoom("N1-ROOM-0{$i}", 'Standard', 800000);
+
+            if ($i % 2 === 0) {
+                // Add placement
+                Placement::create([
+                    'resident_id' => $resident->id,
+                    'room_id' => $room->id,
+                    'started_on' => '2026-01-01',
+                    'ended_on' => '2026-06-30',
+                    'ended_by' => $admin->id,
+                    'end_reason' => 'Selesai',
+                    'agreed_monthly_rate' => 800000,
+                    'created_by' => $admin->id,
+                ]);
+            }
+
+            if ($i % 3 === 0) {
+                // Add facility
+                Facility::create([
+                    'code' => "FAC-N1-0{$i}",
+                    'name' => "Fasilitas {$i}",
+                    'location_type' => 'room',
+                    'room_id' => $room->id,
+                    'condition' => 'good',
+                ]);
+            }
+        }
+
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+
+        $response = $this->actingAs($admin)->get(route('rooms.index'));
+        $response->assertStatus(200);
+
+        $queries = DB::getQueryLog();
+        DB::disableQueryLog();
+
+        // Ensure no individual queries were run per room row for placements/facilities existence
+        foreach ($queries as $q) {
+            $sql = strtolower($q['query']);
+            $this->assertFalse(
+                str_contains($sql, 'select * from `placements` where `placements`.`room_id` =') ||
+                str_contains($sql, 'select * from `facilities` where `facilities`.`room_id` ='),
+                "Found N+1 query: {$q['query']}"
+            );
+        }
     }
 }

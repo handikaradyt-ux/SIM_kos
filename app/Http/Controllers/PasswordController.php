@@ -36,10 +36,12 @@ class PasswordController extends Controller
         $user = Auth::user();
         $wasMustChange = $user->must_change_password;
 
-        // 1. Atomically update password, must_change_password flag, and record audit in same transaction
+        // 1. Atomically update password, must_change_password flag, session_version, and record audit in same transaction
         DB::transaction(function () use ($user, $request, $wasMustChange) {
             $user->password = Hash::make($request->validated('password'));
             $user->must_change_password = false;
+            $user->session_version = ($user->session_version ?? 1) + 1;
+            $user->remember_token = \Illuminate\Support\Str::random(60);
             $user->save();
 
             // Record audit without logging password/token
@@ -58,8 +60,9 @@ class PasswordController extends Controller
             );
         });
 
-        // 2. Regenerate session upon successful password change
+        // 2. Regenerate session upon successful password change and update signature only after transaction commits
         $request->session()->regenerate();
+        $request->session()->put('auth_session_hash_' . $user->id, $user->getSessionSignature());
 
         // Redirect based on role
         $redirectRoute = match ($user->role?->code) {

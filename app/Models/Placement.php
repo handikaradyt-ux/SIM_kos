@@ -60,4 +60,19 @@ class Placement extends Model
     {
         return $this->hasMany(Complaint::class);
     }
+
+    public function isActive(): bool
+    {
+        return $this->ended_on === null;
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->whereNull('placements.ended_on');
+    }
+
+    public function scopeEnded($query)
+    {
+        return $query->whereNotNull('placements.ended_on');
+    }
 }

@@ -83,6 +83,11 @@ class AuthController extends Controller
 
         // 4. Regenerate session to prevent session fixation
         $request->session()->regenerate();
+        if (empty($user->remember_token)) {
+            $user->remember_token = \Illuminate\Support\Str::random(60);
+            $user->saveQuietly();
+        }
+        $request->session()->put('auth_session_hash_' . $user->id, $user->getSessionSignature());
 
         // 5. Audit login - if audit fails, login MUST be rolled back entirely
         try {
@@ -104,7 +109,7 @@ class AuthController extends Controller
             );
         } catch (\Throwable $e) {
             // Asymmetric rule: When login audit fails, DO NOT leave an active session!
-            Auth::logout();
+            Auth::guard()->logoutCurrentDevice();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
@@ -165,9 +170,9 @@ class AuthController extends Controller
                 // Ensure logger failure never prevents session cleanup in finally
             }
         } finally {
-            // Session termination, session invalidation, and CSRF token regeneration
+            // Session termination on this device, session invalidation, and CSRF token regeneration
             // ALWAYS execute in finally, even if audit or technical logging fails.
-            Auth::logout();
+            Auth::guard()->logoutCurrentDevice();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
         }

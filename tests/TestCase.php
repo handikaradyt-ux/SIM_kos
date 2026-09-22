@@ -40,4 +40,26 @@ abstract class TestCase extends BaseTestCase
             );
         }
     }
+
+    /**
+     * Set the currently logged in user for the application,
+     * including valid session signature for the application's security middleware.
+     *
+     * @param  \Illuminate\Contracts\Auth\Authenticatable  $user
+     * @param  string|null  $guard
+     * @return $this
+     */
+    public function actingAs($user, $guard = null)
+    {
+        parent::actingAs($user, $guard);
+
+        if ($user instanceof \App\Models\User) {
+            $sessionKey = 'auth_session_hash_' . $user->id;
+            $this->withSession([
+                $sessionKey => $user->getSessionSignature(),
+            ]);
+        }
+
+        return $this;
+    }
 }

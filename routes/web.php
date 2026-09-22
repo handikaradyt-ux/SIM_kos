@@ -60,6 +60,26 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::resource('rooms', RoomController::class);
         Route::post('/rooms/{room}/archive', [RoomController::class, 'archive'])->name('rooms.archive');
         Route::post('/rooms/{room}/unarchive', [RoomController::class, 'unarchive'])->name('rooms.unarchive');
+
+        // Master Penghuni & Akun (Resident Management)
+        Route::resource('residents', \App\Http\Controllers\ResidentController::class);
+        Route::post('/residents/{resident}/archive', [\App\Http\Controllers\ResidentController::class, 'archive'])->name('residents.archive');
+        Route::post('/residents/{resident}/unarchive', [\App\Http\Controllers\ResidentController::class, 'unarchive'])->name('residents.unarchive');
+        Route::post('/residents/{resident}/activate', [\App\Http\Controllers\ResidentController::class, 'activate'])->name('residents.activate');
+        Route::post('/residents/{resident}/deactivate', [\App\Http\Controllers\ResidentController::class, 'deactivate'])->name('residents.deactivate');
+        Route::post('/residents/{resident}/reset-password', [\App\Http\Controllers\ResidentController::class, 'resetPassword'])->name('residents.reset-password');
+
+        // Master Fasilitas (Facility Management)
+        Route::resource('facilities', \App\Http\Controllers\FacilityController::class);
+        Route::post('/facilities/{facility}/archive', [\App\Http\Controllers\FacilityController::class, 'archive'])->name('facilities.archive');
+        Route::post('/facilities/{facility}/unarchive', [\App\Http\Controllers\FacilityController::class, 'unarchive'])->name('facilities.unarchive');
+
+        // Operasional Penempatan (Placement Management - T10)
+        Route::get('/placements', [\App\Http\Controllers\PlacementController::class, 'index'])->name('placements.index');
+        Route::get('/placements/create', [\App\Http\Controllers\PlacementController::class, 'create'])->name('placements.create');
+        Route::post('/placements/preview', [\App\Http\Controllers\PlacementController::class, 'preview'])->name('placements.preview');
+        Route::post('/placements', [\App\Http\Controllers\PlacementController::class, 'store'])->name('placements.store');
+        Route::get('/placements/{placement}', [\App\Http\Controllers\PlacementController::class, 'show'])->name('placements.show');
     });
 });
 

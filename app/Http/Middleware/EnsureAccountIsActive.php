@@ -19,14 +19,39 @@ class EnsureAccountIsActive
     {
         $user = $request->user();
 
-        if ($user && ! $user->is_active) {
-            Auth::logout();
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
+        if ($user) {
+            if (! $user->is_active) {
+                Auth::guard()->logoutCurrentDevice();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
 
-            return redirect()->route('login')->withErrors([
-                'email' => 'Akun Anda telah dinonaktifkan. Hubungi administrator.',
-            ]);
+                return redirect()->route('login')->withErrors([
+                    'email' => 'Akun Anda telah dinonaktifkan. Hubungi administrator.',
+                ]);
+            }
+
+            // Verify session signature against current user's credentials and session version
+            $sessionKey = 'auth_session_hash_' . $user->id;
+            $sessionHash = $request->session()->get($sessionKey);
+            $currentHash = $user->getSessionSignature();
+
+            // Legitimate remember-me restoration: If authenticated via remember-me cookie in this request, initialize signature
+            if (! $sessionHash && Auth::viaRemember()) {
+                $request->session()->put($sessionKey, $currentHash);
+                $sessionHash = $currentHash;
+            }
+
+            // Reject old sessions without signature or with outdated/mismatched signature
+            // Terminate only this device/session without rotating global tokens
+            if (! $sessionHash || ! hash_equals($sessionHash, $currentHash)) {
+                Auth::guard()->logoutCurrentDevice();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+
+                return redirect()->route('login')->withErrors([
+                    'email' => 'Sesi Anda telah berakhir atau kredensial telah diperbarui. Silakan login kembali.',
+                ]);
+            }
         }
 
         return $next($request);

@@ -2,17 +2,17 @@
 
 ## Status terkini
 
-- **Progres Implementasi**: Task T01, T02, T03, T04, dan T05 telah SELESAI. Task T06–T24 belum dimulai.
+- **Progres Implementasi**: Task T01, T02, T03, T04, T05, T06, T07, T08, T09, dan T10 telah SELESAI. Task T11–T24 belum dimulai.
 - **Environment**: PHP 8.3.32 (cli), Composer 2.10.2, Node v24.18.0, npm 11.16.0, Git 2.55.0, MySQL 8.0.30 (Laragon). Ekstensi `intl` telah aktif.
 - **Pemisahan Status Database Nyata**:
-  - **Database Uji (`sim_kos_test`)**: Dimigrasikan penuh (12 migrasi) dan di-seed dengan `RoleSeeder` dan `UserSeeder`. Dilindungi oleh database guard pada `tests/TestCase.php`. Terbukti lulus seluruh pengujian otomatis: TC-31 (18 tests, 86 assertions), TC-24/TC-32 fondasi (10 tests, 46 assertions), TC-01–TC-05 (24 tests, 113 assertions), TC-29 (6 tests, 49 assertions), total suite 60 tests (296 assertions).
-  - **Database Aplikasi (`sim_kos`)**: Diverifikasi koneksi aktual dan tabel awal (0 tabel), lalu dimigrasikan normal melalui `php artisan migrate` (12 migrasi `Ran` tanpa reset) dan di-seed dengan `DatabaseSeeder` (`RoleSeeder` dan `UserSeeder` idempoten). Akun demo tersimpan aman dengan password dari variabel `.env` lokal tanpa hardcoding dan tanpa fallback string di kode sumber.
-- **Automated Tests**: 60 passed, 296 assertions (0 failure) pada suite pengujian `sim_kos_test`.
-- **Frontend**: Layout bersama Bootstrap 5 lokal via Vite/npm, navigasi role terproteksi (Admin, Pemilik, Penghuni), navigasi terbatas password sementara, aset offline terkompilasi (CSS 236 kB, JS 79 kB tanpa Vite dev server / `public/hot`), visualisasi login/dashboard/ganti password responsif desktop 1366×768 & mobile 390px, pengujian keyboard offcanvas (buka, Escape, fokus kembali).
+  - **Database Uji (`sim_kos_test`)**: Dimigrasikan penuh (13 migrasi) dan di-seed dengan `RoleSeeder` dan `UserSeeder`. Dilindungi oleh database guard pada `tests/TestCase.php`. Terbukti lulus seluruh pengujian otomatis: TC-31 (18 tests, 86 assertions), TC-24/TC-32 fondasi (10 tests, 46 assertions), TC-01–TC-05 (24 tests, 113 assertions), TC-29 (6 tests, 49 assertions), TC-06 & TC-09 (30 tests, 185 assertions), TC-07/TC-05/TC-30 (37 tests, 185 assertions), TC-08 & TC-09 fasilitas (40 tests, 277 assertions), TC-12, TC-13, & TC-33 billing (19 tests, 150 assertions), TC-10 & TC-11 penempatan (18 tests, 153 assertions), total suite 204 tests (1246 assertions).
+  - **Database Aplikasi (`sim_kos`)**: Diverifikasi koneksi aktual dan tabel awal, dimigrasikan normal tanpa reset database. Data operasional kamar, fasilitas, penempatan, dan akun demo 7 pengguna diverifikasi utuh.
+- **Automated Tests**: 204 passed, 1246 assertions (0 failure, 0 error) pada suite pengujian `sim_kos_test`.
+- **Frontend & Master Data**: Layout bersama Bootstrap 5 lokal, navigasi menu "Kamar", "Penghuni", "Fasilitas", & "Penempatan" (Admin) serta "Data Kamar", "Data Penghuni", "Data Fasilitas", & "Data Penempatan" (Pemilik), validasi form server-side dengan pesan Indonesia dan aksesibilitas `aria-invalid`, tab filter (Aktif, Selesai/Diarsipkan, Semua), modal konfirmasi interaktif preview terverifikasi server (`preview_token`), pembatalan request preview lama via AbortController dan pelacakan sequence, status dinamis terbebas dari query N+1 (eager loading `validPayment`), otorisasi server-side `Gate::authorize()`, pembuatan penempatan dan penerbitan invoice pertama atomik dengan `BillingService::syncPlacementInvoices`, serta proteksi drift tarif/tanggal operasional pasca-lock.
 
 ## Langkah berikut
 
-Task T05 telah selesai secara penuh. Langkah berikutnya adalah mempersiapkan implementasi Task **T06: Master Kamar** (CRUD kamar, nomor kamar unik, tarif bulanan, status kamar terisi/kosong; TC-06).
+Task T10: Mulai Penempatan telah selesai secara penuh dengan seluruh pengujian TC-10 dan TC-11 (18 tests, 153 assertions) serta 7 screenshot bukti visual (termasuk verifikasi pembatalan preview lama di browser). Langkah berikutnya adalah melanjutkan ke implementasi Task **T11: Selesai Penempatan (Check-out / Penghentian Kontrak)** yang mengintegrasikan penghentian sewa kamar aktif, pencatatan tanggal keluar (`ended_on`), alasan selesai (`end_reason`), pembebasan status hunian kamar, verifikasi kelengkapan tagihan akhir via `BillingService::syncPlacementInvoices` (bulan keluar ditagih penuh), penguncian baris (`lockForUpdate`), serta pencatatan audit log pengakhiran sewa.
 
 ## Tabel progres
 
@@ -23,7 +23,16 @@ Task T05 telah selesai secara penuh. Langkah berikutnya adalah mempersiapkan imp
 | 1 Fondasi | T03 | Selesai | docs/audit-service.md, docs/evidence/test-results.md (TC-24 & TC-32 Fondasi: 10 tests, 46 assertions) |
 | 1 Fondasi | T04 | Selesai | docs/evidence/test-results.md (TC-01–TC-05: 24 tests, 113 assertions) |
 | 1 Fondasi | T05 | Selesai | docs/evidence/t05-walkthrough.md, docs/evidence/t05/ (13 screenshot nyata), test-results.md (TC-29: 6 tests, 49 assertions) |
-| 2 Data/penempatan | T06–T11 | Belum dimulai | — |
+| 2 Data/penempatan | T06 | Selesai | docs/evidence/t06-walkthrough.md, docs/evidence/t06/ (11 screenshot nyata), test-results.md (TC-06 & TC-09: 30 tests, 185 assertions) |
+| 2 Data/penempatan | T07 | Selesai | docs/evidence/t07-walkthrough.md, docs/evidence/t07/ (9 screenshot nyata), test-results.md (TC-07, TC-05, TC-30: 37 tests, 185 assertions) |
+| 2 Data/penempatan | T08 | Selesai | docs/evidence/t08-walkthrough.md, docs/evidence/t08/ (10 screenshot nyata), test-results.md (TC-08 & TC-09: 40 tests, 277 assertions) |
+| 2 Data/penempatan | T09 | Selesai | docs/evidence/t09-walkthrough.md, test-results.md (TC-12, TC-13, TC-33: 19 tests, 150 assertions) |
+| 2 Data/penempatan | T10 | Selesai | docs/evidence/t10-walkthrough.md, docs/evidence/t10/ (7 screenshot nyata), test-results.md (TC-10 & TC-11: 18 tests, 153 assertions) |
+| 2 Data/penempatan | T11 | Belum dimulai | — |
+| 3 Pembayaran | T12–T15 | Belum dimulai | — |
+| 4 Keluhan | T16–T17 | Belum dimulai | — |
+| 5 Informasi | T18–T20 | Belum dimulai | — |
+| 6 Penyerahan | T21–T24 | Belum dimulai | — |
 | 3 Pembayaran | T12–T15 | Belum dimulai | — |
 | 4 Keluhan | T16–T17 | Belum dimulai | — |
 | 5 Informasi | T18–T20 | Belum dimulai | — |
@@ -317,6 +326,313 @@ Task berikutnya:
   - Jalankan test suite: `php artisan test`
   - Akses aplikasi di browser: `http://127.0.0.1:8000/login`
 - **Task berikutnya**:
-  - T06: Master Kamar (CRUD kamar, nomor kamar unik, tarif bulanan, status kamar terisi/kosong; TC-06).
+  - T06: SELESAI (lanjut ke T07).
+
+### T06 - Master Kamar (Room Management)
+- **Tanggal**: 20 September 2026
+- **Task dan status**: T06 SELESAI
+- **Ringkasan perubahan**:
+  - Mengembangkan Model `Room` dengan relasi `placements()`, `activePlacement()`, dan `facilities()`. Mengimplementasikan `scopeSearch()` dengan pengelompokan kondisi OR (`where(function($q) { ... })`) agar pencarian tidak menerobos tab status arsip maupun hunian. Mengoptimalkan accessor `is_occupied` berbasis `withExists(['activePlacement as has_active_placement'])` untuk mengeliminasi potensi query N+1 per baris.
+  - Membangun `RoomPolicy` dan menerapkannya menggunakan `Gate::authorize()` di seluruh controller: Admin memiliki izin penuh, Pemilik hanya baca (*read-only*), dan Penghuni dilarang penuh (HTTP 403).
+  - Membuat `StoreRoomRequest` dan `UpdateRoomRequest` dengan penegakan izin di method `authorize()` sebelum validasi aturan sehingga role tanpa izin tetap memperoleh HTTP 403 meskipun mengirim payload yang tidak valid. Memvalidasi nomor kamar unik lintas kamar aktif dan diarsipkan, tarif bilangan bulat Rupiah positif (Rp 1 – Rp 999.999.999), dan membersihkan payload dari injeksi `archived_at` serta status hunian.
+  - Membangun `RoomController` dengan transaksi database atomik (`DB::transaction`) dan penguncian baris (`lockForUpdate`). Menolak penghapusan fisik jika kamar memiliki histori penempatan atau referensi fasilitas (termasuk fasilitas diarsipkan) sesuai proteksi referensi RESTRICT (TC-09), serta menolak pengarsipan jika kamar sedang dihuni penempatan aktif.
+  - Mengintegrasikan pencatatan audit log (`AuditService`) pada modul `rooms` untuk aksi `create`, `update`, `delete`, `archive`, dan `unarchive` dengan snapshot before/after yang aman (serialisasi waktu `archived_at` string/null). Memastikan kegagalan audit menyebabkan rollback penuh terhadap seluruh mutasi data.
+  - Membuktikan imutabilitas tarif (TC-06): Pembaruan tarif kamar tidak mengubah `agreed_monthly_rate` penempatan aktif maupun `amount` faktur yang telah terbit.
+  - Membangun antarmuka Blade responsif berbasis Bootstrap 5 lokal: `rooms/index.blade.php` (tab Aktif, Diarsipkan, Semua, filter pencarian & hunian, modal konfirmasi, pagination Bootstrap), `create.blade.php`, `edit.blade.php` (dengan alert edukasi imutabilitas tarif), dan `show.blade.php` (detail kamar, kartu penempatan aktif, tabel fasilitas, histori sewa, dan panduan kebijakan).
+- **File utama**:
+  - `app/Models/Room.php`
+  - `app/Policies/RoomPolicy.php`
+  - `app/Http/Requests/Room/StoreRoomRequest.php`
+  - `app/Http/Requests/Room/UpdateRoomRequest.php`
+  - `app/Http/Controllers/RoomController.php`
+  - `routes/web.php`
+  - `resources/views/layouts/partials/sidebar-nav.blade.php`
+  - `resources/views/rooms/index.blade.php`
+  - `resources/views/rooms/create.blade.php`
+  - `resources/views/rooms/edit.blade.php`
+  - `resources/views/rooms/show.blade.php`
+  - `tests/Feature/RoomTest.php`
+- **Keputusan/asumsi yang berubah dan dampaknya**:
+  - *Otorisasi Gate::authorize()*: Base Controller belum menggunakan trait AuthorizesRequests, sehingga otorisasi ditegakkan konsisten melalui `Gate::authorize()` dan Form Request `authorize()`.
+  - *Pencegahan N+1*: Pemeriksaan `has_active_placement` dilakukan via `withExists` pada query controller, bukan accessor yang menjalankan subquery terpisah tiap baris.
+  - *Penanganan Rollback Exception Test*: Uji rollback audit menggunakan `$this->withoutExceptionHandling()` dan blok try-catch agar exception PHPUnit terverifikasi sekaligus assertion pembatalan transaksi database dapat dieksekusi.
+- **Perintah verifikasi yang benar-benar dijalankan**:
+  - `npm run build` (Sukses membangun aset lokal dalam 1.18s)
+  - `Test-Path "public/hot"` (Hasil: `False`, verifikasi penggunaan aset build lokal)
+  - `php vendor/bin/phpunit --testdox tests/Feature/RoomTest.php` (30 tests, 30 passed, 185 assertions)
+  - `php artisan test` (90 tests, 90 passed, 481 assertions, 0 failure)
+  - Uji visual browser otomatis desktop 1366×768 dan mobile 390px pada `http://127.0.0.1:8000`:
+    - Validasi form tambah kamar (`02-admin-rooms-create-validation.png`)
+    - Daftar kamar Admin desktop (`01-admin-rooms-index-desktop.png`)
+    - Detail kamar Admin desktop (`03-admin-room-show-desktop.png`)
+    - Edit kamar Admin desktop (`04-admin-room-edit-desktop.png`)
+    - Modal konfirmasi arsip kamar (`05-admin-room-archive-modal.png`)
+    - Tab kamar diarsipkan (`06-admin-rooms-archived-tab.png`)
+    - Tampilan mobile 390px (`07-admin-rooms-mobile-390px.png`)
+    - Daftar kamar Pemilik mode baca saja (`08-owner-rooms-index-desktop.png`)
+    - Detail kamar Pemilik mode baca saja (`09-owner-room-show-desktop.png`)
+    - Detail kamar Admin berpenghuni aktif, berfasilitas, dan berhistori sewa terurut tanggal descending (`10-admin-room-detail-relations.png`)
+    - Detail kamar Pemilik dengan relasi lengkap tanpa tombol aksi mutasi (`11-owner-room-detail-relations.png`)
+- **Hasil dan lokasi bukti**:
+  - Walkthrough lengkap: [docs/evidence/t06-walkthrough.md](docs/evidence/t06-walkthrough.md)
+  - 11 Berkas screenshot nyata: `docs/evidence/t06/`
+  - Log rinci pengujian TC-06 & TC-09: [docs/evidence/test-results.md](docs/evidence/test-results.md)
+- **Hal yang belum diuji**:
+  - Modul Penghuni & Akun (T07) serta Fasilitas (T08) yang sesungguhnya di database aplikasi (diuji via relasi model dan test fixtures).
+  - Transaksi pembayaran dan tagihan sewa bulanan (dijadwalkan pada Fase 3).
+- **Kendala tersisa**:
+  - Tidak ada kendala teknis. Seluruh kriteria T06 terpenuhi dengan sempurna.
+- **Cara menjalankan keadaan saat ini**:
+  - Pastikan server aktif: `php artisan serve`
+  - Jalankan test suite: `php artisan test`
+  - Buka halaman Kamar di browser: `http://127.0.0.1:8000/rooms`
+- **Task berikutnya**:
+  - T07: SELESAI (lanjut ke T08).
+
+### T07 - Master Penghuni & Akun (Resident & Account Management)
+- **Tanggal**: 21 September 2026
+- **Task dan status**: T07 SELESAI
+- **Ringkasan perubahan**:
+  - Mengembangkan Model `Resident` dengan relasi `user()`, `placements()`, dan `activePlacement()`. Mengimplementasikan `scopeSearch()` dengan pengelompokan kondisi OR (`where(function($q) { ... })`) untuk pencarian nama, telepon, dan email tanpa menerobos tab status arsip maupun filter akun. Mengoptimalkan accessor `getHasHistoricalReferencesAttribute()` dan helper `canBeArchived()` berbasis `withExists()` untuk mencegah potensi kueri N+1 per baris pada tabel daftar penghuni.
+  - Membangun `ResidentPolicy` dengan pemisahan tegas antara otorisasi master manajemen kos (`viewMaster()`) dan profil mandiri portal (`view()`): Penghuni dilarang mengakses seluruh endpoint master penghuni (**HTTP 403 Forbidden**) termasuk saat mencoba melihat detail dirinya sendiri melalui `/residents/{resident}`. Admin berwenang penuh mengelola (create, edit, delete, archive, unarchive, activate, deactivate, resetPassword); Pemilik memiliki hak baca-saja (*read-only*).
+  - Membuat `StoreResidentRequest` dan `UpdateResidentRequest` dengan penegakan izin di method `authorize()` sebelum validasi aturan sehingga role tanpa izin tetap memperoleh HTTP 403 meskipun payload form tidak valid. Memvalidasi nomor telepon wajib memuat digit (`/^(?=.*[0-9])[0-9+\-\s]{8,20}$/`), email unik di tabel `users` lintas akun aktif maupun nonaktif (dengan pengecualian ID diri sendiri saat update), dan membersihkan input dari manipulasi `role`, `role_id`, `user_id`, `is_active`, `archived_at`, `password`, atau `must_change_password`.
+  - Membangun service transaksional `ResidentService` sebagai satu-satunya pintu masuk mutasi data penghuni dan akun. Mengimplementasikan penguncian baris konsisten (`lockForUpdate`: `Resident` lalu `User`) dan mengevaluasi status penempatan aktif serta referensi histori di dalam transaksi.
+  - Menerapkan pembuatan akun dan profil penghuni secara atomik dalam satu transaksi (`DB::transaction`) beserta pencatatan audit log ganda (`module: 'residents'` dan `module: 'users'`). Kegagalan pada pembuatan profil atau pencatatan log audit kedua terbukti membatalkan seluruh transaksi tanpa meninggalkan akun yatim (TC-07 & TC-30).
+  - Mengimplementasikan sinkronisasi nama: pembaruan nama pada profil penghuni menyinkronkan nama pada akun pengguna terkait, namun terbukti TIDAK mengubah nilai snapshot nama historis pada `invoices.resident_name_snapshot` (TC-30).
+  - Menerapkan aksi eksplisit idempoten aktifkan (`activateAccount`) dan nonaktifkan (`deactivateAccount`). Akun dengan profil diarsipkan dilarang diaktifkan langsung (wajib melalui buka arsip). Membuka arsip hanya diizinkan jika profil berstatus diarsipkan dan mengaktifkan kembali akun terkait secara transparan.
+  - Menerapkan mekanisme pencabutan sesi lama yang kompatibel 100% dengan `SESSION_DRIVER=file` melalui validasi signature session hash (`auth_session_hash_{user_id}`) pada middleware `EnsureAccountIsActive`. Sesi lama dari dua sesi independen langsung dicabut saat penonaktifan akun, pengaktifan kembali, atau reset password sementara, serta remember token dirotasi (TC-05).
+  - Penyerahan password sementara: Password acak 12 karakter alfanumerik dihasilkan secara kriptografis aman (`Str::password(12)`), langsung di-hash, flag `must_change_password = true`, dan diserahkan ke Admin melalui session flash sekali pakai. Halaman yang menampilkan kredensial dilindungi header `Cache-Control: no-store`, password termaskir default (`••••••••••••`) di UI, dan plaintext password tidak pernah dicatat ke audit log atau URL.
+  - Membangun antarmuka Blade responsif berbasis Bootstrap 5 lokal: `residents/index.blade.php` (tab Aktif, Diarsipkan, Semua, filter pencarian & status akun, modal konfirmasi Bootstrap 5), `create.blade.php`, `edit.blade.php` (dengan alert edukasi imutabilitas invoice snapshot), dan `show.blade.php` (kartu identitas, kartu akun, kartu riwayat sewa kamar, panel kelola akun, panel aksi master, dan kartu kredensial password sementara termaskir).
+- **File utama**:
+  - `app/Models/Resident.php`
+  - `app/Models/User.php`
+  - `app/Policies/ResidentPolicy.php`
+  - `app/Services/ResidentService.php`
+  - `app/Http/Requests/Resident/StoreResidentRequest.php`
+  - `app/Http/Requests/Resident/UpdateResidentRequest.php`
+  - `app/Http/Controllers/ResidentController.php`
+  - `app/Http/Middleware/EnsureAccountIsActive.php`
+  - `app/Http/Controllers/AuthController.php`
+  - `app/Http/Controllers/PasswordController.php`
+  - `routes/web.php`
+  - `resources/views/layouts/partials/sidebar-nav.blade.php`
+  - `resources/views/residents/index.blade.php`
+  - `resources/views/residents/create.blade.php`
+  - `resources/views/residents/edit.blade.php`
+  - `resources/views/residents/show.blade.php`
+  - `tests/Feature/ResidentTest.php`
+- **Keputusan/asumsi yang berubah dan dampaknya**:
+  - *Signature Hash Sesi per User ID*: Signature session disimpan dengan kunci `auth_session_hash_{user_id}` agar evaluasi independen antar user dalam lingkungan pengujian multi-sesi tidak saling menginterferensi.
+  - *Masking Default Password Sementara*: Password sementara termaskir secara default di tampilan Blade (`••••••••••••`) dan hanya terlihat jika tombol "Tampilkan" ditekan secara sadar oleh Admin, memastikan tidak ada plaintext password yang bocor ke rekaman layar atau tangkapan visual.
+  - *Penguncian Urutan Transaksi*: Baris `Resident` selalu dikunci terlebih dahulu baru disusul baris `User` untuk mencegah deadlock jika terjadi mutasi simultan.
+- **Perintah verifikasi yang benar-benar dijalankan**:
+  - `npm run build` (Sukses membangun aset lokal dalam 773ms)
+  - `php vendor/bin/phpunit --testdox tests/Feature/ResidentTest.php` (37 tests, 37 passed, 185 assertions)
+  - `php artisan test` (127 tests, 127 passed, 666 assertions, 0 failure)
+  - Uji visual browser otomatis desktop 1366×768 dan mobile 390px pada `http://127.0.0.1:8000`:
+    - Daftar penghuni Admin desktop (`01-admin-residents-index-desktop.png`)
+    - Validasi form tambah penghuni (`02-admin-residents-create-validation.png`)
+    - Detail penghuni Admin dengan kartu kredensial termaskir (`03-admin-resident-show-credentials.png`)
+    - Edit penghuni Admin desktop (`04-admin-resident-edit-desktop.png`)
+    - Modal konfirmasi reset password sementara (`05-admin-resident-reset-password-modal.png`)
+    - Modal konfirmasi arsip penghuni (`06-admin-resident-archive-modal.png`)
+    - Tampilan mobile 390px (`07-admin-residents-mobile-390px.png`)
+    - Daftar penghuni Pemilik mode baca saja (`08-owner-residents-index-desktop.png`)
+    - Detail penghuni Pemilik mode baca saja (`09-owner-resident-show-desktop.png`)
+- **Hasil dan lokasi bukti**:
+  - Walkthrough lengkap: [docs/evidence/t07-walkthrough.md](docs/evidence/t07-walkthrough.md)
+  - 9 Berkas screenshot nyata: `docs/evidence/t07/`
+  - Log rinci pengujian TC-07, TC-05, & TC-30: [docs/evidence/test-results.md](docs/evidence/test-results.md)
+- **Hal yang belum diuji**:
+  - Modul Master Fasilitas (T08: telah selesai), BillingService (T09), Mulai Penempatan (T10), Akhiri Penempatan (T11), dan modul tagihan bulanan (Fase 3: T12–T15).
+- **Kendala tersisa**:
+  - Tidak ada kendala teknis. Seluruh kriteria T07 terpenuhi dengan sempurna.
+- **Cara menjalankan keadaan saat ini**:
+  - Pastikan server aktif: `php artisan serve`
+  - Jalankan test suite: `php artisan test`
+  - Buka halaman Penghuni di browser: `http://127.0.0.1:8000/residents`
+- **Task berikutnya**:
+  - T08: SELESAI (lanjut ke T09).
+
+### T08 - Master Fasilitas (Facility Management)
+- **Tanggal**: 21 September 2026
+- **Task dan status**: T08 SELESAI
+- **Ringkasan perubahan**:
+  - Mengembangkan Model `Facility` dengan relasi `room()` dan `complaints()`. Mengimplementasikan query scope `active()`, `archived()`, `search()`, `condition()`, `locationType()`, dan `room()`. Menambahkan accessor dan helper bebas N+1 `hasHistoricalReferences()`, `canBeDeleted()`, `hasActiveComplaints()`, `canBeArchived()`, `location_label`, `condition_label`, dan `condition_badge_class`.
+  - Menyelaraskan Model `Room` dengan menambahkan method `isArchived(): bool` agar seragam dengan accessor `is_archived`.
+  - Membangun `FacilityPolicy` dan menegakkannya di seluruh endpoint melalui `Gate::authorize()`: Admin memiliki wewenang penuh, Pemilik hanya baca (*read-only*), dan Penghuni dilarang penuh (**HTTP 403 Forbidden**).
+  - Membuat `StoreFacilityRequest` dan `UpdateFacilityRequest` dengan penegakan otorisasi dini di `authorize()` sebelum validasi aturan (role tanpa izin langsung memperoleh HTTP 403 bahkan saat mengirim payload invalid). Memvalidasi keunikan kode case-insensitive (`LOWER(code)`), panjang nama 2–100 karakter, kondisi valid (`good`, `broken`, `repairing`), penegakan aturan CHECK constraint lokasi (`chk_facilities_location_rule`), penolakan kamar arsip untuk penempatan fasilitas baru/pindah, dan pembuangan field `archived_at` dari payload.
+  - Menegakkan imutabilitas lokasi fasilitas berhistori keluhan: Jika fasilitas pernah direferensikan keluhan, pembaruan lokasi (room→room, room→shared, shared→room, perubahan area_name) ditolak secara tegas demi integritas data riwayat teknis. Pembaruan non-lokasi (nama, kondisi, catatan) tetap diizinkan dan ditangani aman terhadap elemen input yang di-disable oleh browser.
+  - Mengizinkan fasilitas eksisting di kamar yang kemudian diarsipkan untuk memperbarui data non-lokasi tanpa dipaksa pindah kamar.
+  - Membangun service transaksional `FacilityService` dengan penguncian baris konsisten (`Facility` lalu target `Room`), verifikasi histori keluhan dan status kamar arsip di dalam transaksi, serta integrasi audit log (`AuditService`, module: `facilities`). Kegagalan audit terbukti membatalkan seluruh mutasi (rollback penuh).
+  - Menerapkan aksi arsip dan buka arsip yang idempoten tanpa mutasi atau audit ganda jika status sudah sesuai.
+  - Membangun antarmuka Blade responsif berbasis Bootstrap 5 lokal: `facilities/index.blade.php` (tab Aktif, Diarsipkan, Semua; filter kondisi dan lokasi; tombol aksi dengan alasan tindakan tidak tersedia yang terbaca langsung pada layar desktop dan mobile; modal konfirmasi Bootstrap 5), `create.blade.php` (toggle interaktif vanilla JS kamar vs area bersama), `edit.blade.php` (alert edukasi penguncian lokasi), dan `show.blade.php` (kartu data spesifikasi, kartu riwayat keluhan terkait nyata, dan panduan kebijakan integritas data).
+- **File utama**:
+  - `app/Models/Facility.php`
+  - `app/Models/Room.php`
+  - `app/Policies/FacilityPolicy.php`
+  - `app/Services/FacilityService.php`
+  - `app/Http/Requests/Facility/StoreFacilityRequest.php`
+  - `app/Http/Requests/Facility/UpdateFacilityRequest.php`
+  - `app/Http/Controllers/FacilityController.php`
+  - `routes/web.php`
+  - `resources/views/layouts/partials/sidebar-nav.blade.php`
+  - `resources/views/facilities/index.blade.php`
+  - `resources/views/facilities/create.blade.php`
+  - `resources/views/facilities/edit.blade.php`
+  - `resources/views/facilities/show.blade.php`
+  - `tests/Feature/FacilityTest.php`
+- **Keputusan/asumsi yang berubah dan dampaknya**:
+  - *Penanganan Elemen Disabled*: Input form lokasi yang di-disable oleh browser pada fasilitas berhistori keluhan tidak dikirim ke server. Server menangani secara eksplisit nilai kanonikal dari basis data sehingga field non-lokasi dapat diperbarui dengan lancar.
+  - *Toleransi Kamar Arsip Eksisting*: Fasilitas yang sudah berada di kamar arsip tidak dipaksa pindah saat Admin hanya mengedit nama, kondisi, atau catatan. Dropdown edit menyertakan label `[Kamar Diarsipkan]` untuk kamar tersebut.
+  - *Alasan Tindakan Terbaca Langsung*: Alasan mengapa tombol Arsip atau Hapus tidak tersedia ditampilkan sebagai teks badge yang terlihat langsung di bawah tombol pada tabel dan kartu detail, memastikan pengguna mobile dapat membacanya tanpa mengandalkan hover mouse.
+- **Perintah verifikasi yang benar-benar dijalankan**:
+  - `npm run build` (Sukses membangun aset lokal dalam 1.02s)
+  - `Test-Path "public/hot"` (Hasil: `False`, verifikasi aset build lokal)
+  - `php artisan view:cache` (Hasil: `Blade templates cached successfully`)
+  - `php vendor/bin/phpunit --testdox tests/Feature/FacilityTest.php` (40 tests, 40 passed, 277 assertions)
+  - `php artisan test` (167 tests, 167 passed, 943 assertions, 0 failure)
+  - Uji visual browser otomatis desktop 1366×768 dan mobile 390px pada `http://127.0.0.1:8000`:
+    - Daftar fasilitas Admin desktop (`01-admin-facilities-index-desktop.png`)
+    - Validasi form tambah fasilitas (`02-admin-facilities-create-validation.png`)
+    - Notifikasi sukses tambah fasilitas (`03-admin-facility-create-success.png`)
+    - Detail fasilitas Admin desktop (`04-admin-facility-show-desktop.png`)
+    - Edit fasilitas Admin desktop (`05-admin-facility-edit-desktop.png`)
+    - Modal konfirmasi arsip fasilitas (`06-admin-facility-archive-modal.png`)
+    - Tab fasilitas diarsipkan (`07-admin-facilities-archived-tab.png`)
+    - Tampilan mobile 390px (`08-admin-facilities-mobile-390px.png`)
+    - Daftar fasilitas Pemilik mode baca saja (`09-owner-facilities-index-desktop.png`)
+    - Detail fasilitas Pemilik mode baca saja (`10-owner-facility-show-desktop.png`)
+- **Hasil dan lokasi bukti**:
+  - Walkthrough lengkap: [docs/evidence/t08-walkthrough.md](docs/evidence/t08-walkthrough.md)
+  - 10 Berkas screenshot nyata: `docs/evidence/t08/`
+  - Log rinci pengujian TC-08 & TC-09: [docs/evidence/test-results.md](docs/evidence/test-results.md)
+- **Koreksi Penutupan T08 yang Diterapkan**:
+  - Pengetatan validasi tipe input pada `StoreFacilityRequest` dan `UpdateFacilityRequest` dengan aturan `bail` dan pengecekan tipe sebelum callback `trim()`, `strtolower()`, casting, atau `Room::find()`.
+  - Input bertipe array (pada `code`, `room_id`, `location_type`, dan `area_name`) menghasilkan error validasi 422 terkendali, bukan error fatal HTTP 500.
+  - Input invalid tidak diubah/dikonversi menjadi nilai kanonikal lalu dilaporkan berhasil: input array pada fasilitas berhistori ditolak tegas dan tidak mengubah data maupun menambah audit.
+  - Form lokasi yang disabled tetap didukung (field yang tidak dikirim oleh browser mempertahankan nilai lokasi lama dari database), sedangkan payload yang dikirim divalidasi ketat.
+  - Ditambahkan 3 regression test di `FacilityTest.php` untuk create dan update dengan input array (total 40 tests, 277 assertions).
+- **Hal yang belum diuji**:
+  - Modul Keluhan mandiri pada portal penghuni (dijadwalkan pada Fase 4: T16–T17).
+  - Modul BillingService (T09: periode bulan kalender, tarif penuh tanpa prorata, snapshot agreed_monthly_rate penempatan), Mulai Penempatan (T10), dan Akhiri Penempatan (T11).
+- **Kendala tersisa**:
+  - Tidak ada kendala teknis. Seluruh kriteria T08 terpenuhi dengan sempurna.
+- **Cara menjalankan keadaan saat ini**:
+  - Pastikan server aktif: `php artisan serve`
+  - Jalankan test suite: `php artisan test`
+  - Buka halaman Fasilitas di browser: `http://127.0.0.1:8000/facilities`
+- **Task berikutnya**:
+  - T09: SELESAI (lanjut ke T10).
+
+### T09 - BillingService (Fondasi Tagihan & Sinkronisasi Idempoten)
+- **Tanggal**: 21 September 2026
+- **Task dan status**: T09 SELESAI
+- **Ringkasan perubahan**:
+  - Membangun service inti `BillingService` (`app/Services/BillingService.php`) dengan fungsi lengkap:
+    - Normalisasi tanggal bisnis `Asia/Jakarta` (`parseModelDate`) dari kolom `DATE` Eloquent/MySQL tanpa memutasi objek model penempatan dan bebas distorsi offset jam.
+    - Kontrak tanggal pasti pada `getRequiredPeriods`: mengembalikan array kosong `[]` jika penempatan mulai setelah tanggal acuan (termasuk pada bulan kalender yang sama) atau jika `maxPeriodMonth` sebelum tanggal mulai; format tanggal invalid melempar `InvalidArgumentException`.
+    - Larangan penerbitan invoice masa depan pada `resolveReferenceDate`: tanggal acuan masa depan ditolak dengan `InvalidArgumentException`, dan verifikasi pengujian dilakukan dengan membekukan waktu server via `Carbon::setTestNow()`.
+    - Perhitungan jatuh tempo `calculateDueDate`: jatuh tempo default tanggal 5 (`YYYY-MM-05`), kecuali periode pertama jika `started_on->day > 5` maka `due_on = started_on`. Menolak periode di luar rentang masa sewa yang sah.
+    - Pembentukan payload tagihan `calculateInvoicePayload`: memastikan nominal tagihan bersumber dari snapshot `agreed_monthly_rate` penempatan (bukan tarif kamar fisik terbaru), `period_month` selalu tanggal 1 (`YYYY-MM-01`), serta validasi kelayakan periode langsung (menolak penempatan belum mulai per tanggal acuan, periode masa depan setelah bulan berjalan, dan periode di luar masa tinggal).
+    - Otorisasi terverifikasi `ensureActorIsAdmin`: memverifikasi keberadaan aktor di database dan membaca ulang status aktif/peran langsung dari basis data, kebal terhadap manipulasi objek in-memory yang sudah dinonaktifkan atau didemosi.
+    - Operasi murni baca-saja `previewPlacement`, `checkCoverage`, dan `checkGlobalCoverage` (memeriksa seluruh penempatan termasuk yang sudah selesai/ended jika memiliki histori invoice yang hilang) tanpa melakukan mutasi database atau pencatatan audit log.
+    - Sinkronisasi transaksional atomik `syncPlacementInvoices` dengan otorisasi ketat (hanya Admin aktif, melempar `AuthorizationException` jika tidak sah), penguncian baris (`lockForUpdate`), integrasi audit log (`module: 'invoices'`, action: `'create'`), dan pelemparan kembali exception agar transaksi induk (T10/T11) dapat rollback utuh.
+    - Pemrosesan batch `syncAllPlacements` dengan tanggal acuan seragam yang dibekukan di awal batch, isolasi kegagalan per penempatan (penempatan lain tetap commit mandiri bila tanpa transaksi luar), dan pesan kegagalan aman tanpa kebocoran raw SQL, kredensial, atau stack trace.
+  - Memperbarui model `Placement` (`app/Models/Placement.php`) dengan query scope `scopeActive()`, `scopeEnded()`, dan helper method `isActive()`.
+  - Membangun test suite komprehensif `tests/Feature/BillingServiceTest.php` mencakup 19 metode pengujian (150 assertions) yang memverifikasi seluruh skenario TC-12, TC-13, TC-33, batas konkurensi database via constraint `UNIQUE(placement_id, period_month)`, imutabilitas tarif dan snapshot, isolasi batch, otorisasi aktor tersimpan/usang, serta rollback atomik.
+- **File utama**:
+  - `app/Services/BillingService.php`
+  - `app/Models/Placement.php`
+  - `tests/Feature/BillingServiceTest.php`
+  - `docs/evidence/t09-walkthrough.md`
+  - `docs/evidence/test-results.md`
+- **Keputusan/asumsi yang berubah dan dampaknya**:
+  - *Normalisasi Offset UTC ke Asia/Jakarta*: Kolom `DATE` MySQL yang di-cast menjadi `Carbon` oleh Eloquent memiliki offset `00:00:00 UTC`. Helper `parseModelDate()` mengekstrak string `'Y-m-d'` sebelum membuat instance `Carbon` di `Asia/Jakarta`, memastikan komparasi tanggal `startOfDay()` tidak terdistorsi oleh selisih 7 jam.
+  - *Integrasi Constraint End Metadata*: Pembuatan fixture penempatan yang telah selesai (`ended_on`) diwajibkan menyertakan `ended_by` dan `end_reason` sesuai CHECK constraint database `chk_placements_end_metadata`.
+  - *Batas Bukti Konkurensi & Transaksi Batch*: Pengujian otomatis dijalankan secara sekuensial pada satu koneksi PHPUnit. Perlindungan konkurensi di produksi dijamin oleh `lockForUpdate()` dan constraint MySQL composite unique `invoices_placement_id_period_month_unique`. Isolasi commit mandiri per penempatan pada `syncAllPlacements` ditegaskan hanya berlaku tanpa transaksi induk pembungkus.
+- **Perintah verifikasi yang benar-benar dijalankan**:
+  - `php vendor/bin/phpunit --testdox tests/Feature/BillingServiceTest.php` (Hasil: 19 tests, 19 passed, 150 assertions)
+  - `php artisan test` (Hasil: 186 tests, 186 passed, 1093 assertions, 0 failure)
+- **Hasil dan lokasi bukti**:
+  - Walkthrough lengkap: [docs/evidence/t09-walkthrough.md](docs/evidence/t09-walkthrough.md)
+  - Log rinci pengujian TC-12, TC-13, & TC-33: [docs/evidence/test-results.md](docs/evidence/test-results.md)
+- **Hal yang belum diuji**:
+  - Modul Mulai Penempatan / Check-in kamar baru (T10).
+  - Modul Akhiri Penempatan / Check-out kamar (T11).
+  - Antarmuka pengguna (UI/Blade/Controller) daftar invoice dan tombol sinkronisasi tagihan (T12).
+- **Kendala tersisa**:
+  - Tidak ada kendala teknis. Seluruh kriteria bisnis dan arsitektur T09 terpenuhi dengan sempurna.
+- **Cara menjalankan keadaan saat ini**:
+  - Pastikan server aktif: `php artisan serve`
+  - Jalankan test suite BillingService: `php vendor/bin/phpunit --testdox tests/Feature/BillingServiceTest.php`
+  - Jalankan test suite penuh: `php artisan test`
+- **Task berikutnya**:
+  - T10: SELESAI (lanjut ke T11).
+
+### T10 - Mulai Penempatan (Check-in / New Placement)
+- **Tanggal**: 21 September 2026
+- **Task dan status**: T10 SELESAI
+- **Ringkasan perubahan**:
+  - Membangun service layer penempatan `PlacementService` (`app/Services/PlacementService.php`):
+    - `previewPlacement`: operasi murni *read-only* (0 insert, 0 update, 0 delete, 0 audit log), validasi kelayakan kamar tidak diarsipkan dan kosong, validasi penghuni aktif belum memiliki penempatan, deteksi riwayat penempatan selesai di bulan yang sama (`same_month_warning`), kalkulasi tanggal mulai WIB hari ini dan proyeksi tagihan pertama via `BillingService::calculateDueDate` (in-memory), pembuatan session preview token aman (`placement_preview_{token}`) yang mengikat admin, kamar, penghuni, tarif, dan masa kedaluwarsa 15 menit.
+    - `startPlacement`: verifikasi token sesi preview, transaksi atomik `DB::transaction()`, penguncian pesimistik berurutan $\text{Room} \rightarrow \text{Resident} \rightarrow \text{User}$ (`lockForUpdate`), penentuan satu tanggal bisnis tunggal WIB pasca-lock, deteksi drift tarif dan pergantian tanggal operasional pasca-lock, pembuatan baris `Placement` dengan tarif otoritatif kamar fisik saat lock, penerbitan invoice periode pertama atomik via `BillingService::syncPlacementInvoices`, pencatatan dual audit log atomik (`placements` dan `invoices`), penanganan MySQL error 1062 pada unique index active placement, dan invalidasi token sesi preview.
+  - Membangun Form Request ketat `PreviewPlacementRequest` dan `StorePlacementRequest`: otorisasi Admin via `Gate::allows('create')` sebelum validasi, validasi integer ketat dengan `bail` anti-array injection, penolakan dan pembersihan field manipulatif (`started_on`, `agreed_monthly_rate`, `created_by`, `status`).
+  - Membangun controller dan routing penempatan `PlacementController` (`app/Http/Controllers/PlacementController.php`) dan `routes/web.php`:
+    - `index`: filter pencarian, filter status (Aktif, Selesai, Semua), pagination, eager loading anti-N+1 (`resident.user`, `room`, `creator`, `ender`, `withCount('invoices')`).
+    - `create`: muat kamar kosong aktif dan penghuni tanpa penempatan.
+    - `preview`: pemanggilan preview dan response JSON 200/422 terkendali (anti-500).
+    - `store`: eksekusi penempatan atomik dan redirect PRG dengan flash message.
+    - `show`: detail penempatan dengan eager loading `validPayment` pada invoice (bebas N+1) secara *read-only* (tanpa mutasi pembayaran atau pengakhiran sewa).
+  - Membangun dan menyempurnakan Blade Views responsif:
+    - `resources/views/placements/create.blade.php`: dropdown kamar & penghuni, tombol preview, modal konfirmasi Bootstrap 5 aman XSS (`textContent`), penanganan respons preview lama dengan pembatalan request in-flight via `AbortController`, penolakan data basi via pelacakan sequence (`requestSequence`) dan kesesuaian ID entitas sebelum dan sesudah `response.json()`, pemulihan loading state instan saat pilihan berubah, tombol konfirmasi default disabled, serta pencegahan double submit.
+    - `resources/views/placements/index.blade.php` & `show.blade.php`: tabel penempatan dengan badge status, filter tab, rincian kontrak, dan invoice periode pertama.
+    - `resources/views/layouts/partials/sidebar-nav.blade.php`: aktivasi menu "Penempatan" (Admin) dan "Data Penempatan" (Pemilik).
+  - Memperbarui model `Resident` (`app/Models/Resident.php`) dengan method `isArchived(): bool`.
+  - Membangun test suite `tests/Feature/PlacementTest.php` mencakup 18 metode pengujian (153 assertions) yang memverifikasi seluruh skenario TC-10 & TC-11, termasuk 3 skenario rollback terpisah: kegagalan BillingService, kegagalan audit invoice, dan kegagalan audit placement tahap akhir dengan BillingService nyata.
+- **File utama**:
+  - `app/Policies/PlacementPolicy.php`
+  - `app/Services/PlacementService.php`
+  - `app/Http/Requests/Placement/PreviewPlacementRequest.php`
+  - `app/Http/Requests/Placement/StorePlacementRequest.php`
+  - `app/Http/Controllers/PlacementController.php`
+  - `resources/views/placements/index.blade.php`
+  - `resources/views/placements/create.blade.php`
+  - `resources/views/placements/show.blade.php`
+  - `routes/web.php`
+  - `resources/views/layouts/partials/sidebar-nav.blade.php`
+  - `tests/Feature/PlacementTest.php`
+  - `docs/evidence/t10-walkthrough.md`
+  - `docs/evidence/test-results.md`
+- **Keputusan/asumsi yang berubah dan dampaknya**:
+  - *Server-Verified Preview Token*: Token preview sesi server menggantikan payload client murni, menjamin bahwa penempatan yang dieksekusi benar-benar telah melalui persetujuan Administrator atas tarif dan tanggal mulai yang sah.
+  - *Pembatalan Fetch Asinkron & Invalidasi State*: Saat admin mengubah dropdown kamar/penghuni ketika proses preview masih memuat, fetch sebelumnya dibatalkan seketika via `AbortController`, `preview_token` dikosongkan, tombol submit modal dinonaktifkan, dan UI loading segera pulih. Respons jaringan yang terlambat tidak akan membuka modal untuk kombinasi entitas yang sudah diganti.
+  - *Pemisahan Pengujian Rollback 3 Skenario*: Pengujian rollback atomik dipisahkan menjadi 3 skenario eksplisit untuk membuktikan bahwa rollback terjadi pada tahap awal (BillingService), tahap tengah (audit invoice), maupun tahap akhir (audit placement setelah invoice dan audit invoice tersimpan dalam transaksi).
+- **Perintah verifikasi yang benar-benar dijalankan**:
+  - `php vendor/bin/phpunit --testdox tests/Feature/PlacementTest.php` (Hasil: 18 tests, 18 passed, 153 assertions)
+  - `php artisan test` (Hasil: 204 tests, 204 passed, 1246 assertions, 0 failure)
+  - Verifikasi browser riil dengan respons diperlambat (3 detik): pembatalan fetch lama, pemulihan tombol preview, dan render akurat pada request baru terekam di `07-preview-abort-and-recovery.png`.
+- **Hasil dan lokasi bukti**:
+  - Walkthrough lengkap: [docs/evidence/t10-walkthrough.md](docs/evidence/t10-walkthrough.md)
+  - Log rinci pengujian TC-10 & TC-11: [docs/evidence/test-results.md](docs/evidence/test-results.md)
+  - Bukti tangkapan layar visual: [docs/evidence/t10/](docs/evidence/t10/) (7 tangkapan layar)
+- **Hal yang belum diuji**:
+  - Modul Akhiri Penempatan / Check-out kamar aktif (T11).
+  - Antarmuka daftar tagihan dan sinkronisasi manual penagihan (T12).
+  - Pencatatan pembayaran tunai/transfer (T13).
+- **Kendala tersisa**:
+  - Tidak ada kendala teknis. Seluruh kriteria bisnis, koreksi penutupan, dan verifikasi antarmuka visual T10 terpenuhi dengan sempurna.
+- **Cara menjalankan keadaan saat ini**:
+  - Pastikan server aktif: `php artisan serve`
+  - Jalankan test suite Placement: `php vendor/bin/phpunit --testdox tests/Feature/PlacementTest.php`
+  - Jalankan test suite penuh: `php artisan test`
+  - Buka halaman Penempatan di browser: `http://127.0.0.1:8000/placements`
+- **Task berikutnya**:
+  - T11: Selesai Penempatan (Check-out / Penghentian Kontrak: form dan aksi pengakhiran sewa, pencatatan tanggal keluar `ended_on` dan alasan selesai `end_reason`, pembebasan status hunian kamar, verifikasi kelengkapan tagihan akhir melalui `BillingService::syncPlacementInvoices`, serta pencatatan audit log pengakhiran sewa).
+
+
+
+
+
 
 
