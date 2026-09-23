@@ -50,4 +50,16 @@ class Invoice extends Model
     {
         return $this->hasOne(Payment::class)->where('status', 'valid');
     }
+
+    /**
+     * Check if this invoice has an associated valid payment.
+     */
+    public function hasValidPayment(): bool
+    {
+        if ($this->relationLoaded('validPayment')) {
+            return $this->validPayment !== null;
+        }
+
+        return $this->validPayment()->exists();
+    }
 }

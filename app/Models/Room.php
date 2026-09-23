@@ -70,6 +70,14 @@ class Room extends Model
     }
 
     /**
+     * Check if the room is currently occupied.
+     */
+    public function isOccupied(): bool
+    {
+        return $this->is_occupied;
+    }
+
+    /**
      * Check if the room is archived.
      */
     public function getIsArchivedAttribute(): bool

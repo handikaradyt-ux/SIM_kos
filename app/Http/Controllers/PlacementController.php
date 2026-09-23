@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Placement\PreviewEndPlacementRequest;
 use App\Http\Requests\Placement\PreviewPlacementRequest;
+use App\Http\Requests\Placement\StoreEndPlacementRequest;
 use App\Http\Requests\Placement\StorePlacementRequest;
 use App\Models\Placement;
 use App\Models\Resident;
@@ -208,5 +210,58 @@ class PlacementController extends Controller
         ]);
 
         return view('placements.show', compact('placement'));
+    }
+
+    /**
+     * Preview ending an active placement and generate a server-verified session token.
+     * Admin only, strictly read-only.
+     */
+    public function endPreview(PreviewEndPlacementRequest $request, Placement $placement): JsonResponse
+    {
+        Gate::authorize('end', $placement);
+
+        if (config('app.env') === 'local' && $request->filled('_delay_ms')) {
+            usleep(min((int) $request->input('_delay_ms'), 5000) * 1000);
+        }
+
+        try {
+            $previewData = $this->placementService->previewEndPlacement($placement->id, Auth::user());
+
+            return response()->json([
+                'success' => true,
+                'data' => $previewData,
+            ]);
+        } catch (DomainException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 422);
+        }
+    }
+
+    /**
+     * Terminate an active placement atomically.
+     * Synchronizes missing invoices, marks ended_on/ended_by/end_reason, and logs audit.
+     * Admin only.
+     */
+    public function end(StoreEndPlacementRequest $request, Placement $placement): RedirectResponse
+    {
+        Gate::authorize('end', $placement);
+
+        try {
+            $this->placementService->endPlacement(
+                $placement->id,
+                (string) $request->validated('end_reason'),
+                (string) $request->validated('preview_token'),
+                Auth::user()
+            );
+
+            return redirect()->route('placements.show', $placement)
+                ->with('success', 'Penempatan berhasil diakhiri.');
+        } catch (DomainException $e) {
+            return redirect()->route('placements.show', $placement)
+                ->withInput($request->only('end_reason'))
+                ->with('error', $e->getMessage());
+        }
     }
 }

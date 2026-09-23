@@ -74,12 +74,14 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::post('/facilities/{facility}/archive', [\App\Http\Controllers\FacilityController::class, 'archive'])->name('facilities.archive');
         Route::post('/facilities/{facility}/unarchive', [\App\Http\Controllers\FacilityController::class, 'unarchive'])->name('facilities.unarchive');
 
-        // Operasional Penempatan (Placement Management - T10)
+        // Operasional Penempatan (Placement Management - T10 & T11)
         Route::get('/placements', [\App\Http\Controllers\PlacementController::class, 'index'])->name('placements.index');
         Route::get('/placements/create', [\App\Http\Controllers\PlacementController::class, 'create'])->name('placements.create');
         Route::post('/placements/preview', [\App\Http\Controllers\PlacementController::class, 'preview'])->name('placements.preview');
         Route::post('/placements', [\App\Http\Controllers\PlacementController::class, 'store'])->name('placements.store');
         Route::get('/placements/{placement}', [\App\Http\Controllers\PlacementController::class, 'show'])->name('placements.show');
+        Route::post('/placements/{placement}/end-preview', [\App\Http\Controllers\PlacementController::class, 'endPreview'])->name('placements.end-preview');
+        Route::post('/placements/{placement}/end', [\App\Http\Controllers\PlacementController::class, 'end'])->name('placements.end');
     });
 });
 

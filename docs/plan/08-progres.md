@@ -2,17 +2,17 @@
 
 ## Status terkini
 
-- **Progres Implementasi**: Task T01, T02, T03, T04, T05, T06, T07, T08, T09, dan T10 telah SELESAI. Task T11–T24 belum dimulai.
+- **Progres Implementasi**: Task T01, T02, T03, T04, T05, T06, T07, T08, T09, T10, dan T11 telah SELESAI. Task T12–T24 belum dimulai.
 - **Environment**: PHP 8.3.32 (cli), Composer 2.10.2, Node v24.18.0, npm 11.16.0, Git 2.55.0, MySQL 8.0.30 (Laragon). Ekstensi `intl` telah aktif.
 - **Pemisahan Status Database Nyata**:
-  - **Database Uji (`sim_kos_test`)**: Dimigrasikan penuh (13 migrasi) dan di-seed dengan `RoleSeeder` dan `UserSeeder`. Dilindungi oleh database guard pada `tests/TestCase.php`. Terbukti lulus seluruh pengujian otomatis: TC-31 (18 tests, 86 assertions), TC-24/TC-32 fondasi (10 tests, 46 assertions), TC-01–TC-05 (24 tests, 113 assertions), TC-29 (6 tests, 49 assertions), TC-06 & TC-09 (30 tests, 185 assertions), TC-07/TC-05/TC-30 (37 tests, 185 assertions), TC-08 & TC-09 fasilitas (40 tests, 277 assertions), TC-12, TC-13, & TC-33 billing (19 tests, 150 assertions), TC-10 & TC-11 penempatan (18 tests, 153 assertions), total suite 204 tests (1246 assertions).
+  - **Database Uji (`sim_kos_test`)**: Dimigrasikan penuh (13 migrasi) dan di-seed dengan `RoleSeeder` dan `UserSeeder`. Dilindungi oleh database guard pada `tests/TestCase.php`. Terbukti lulus seluruh pengujian otomatis: TC-31 (18 tests, 86 assertions), TC-24/TC-32 fondasi (10 tests, 46 assertions), TC-01–TC-05 (24 tests, 113 assertions), TC-29 (6 tests, 49 assertions), TC-06 & TC-09 (30 tests, 185 assertions), TC-07/TC-05/TC-30 (37 tests, 185 assertions), TC-08 & TC-09 fasilitas (40 tests, 277 assertions), TC-12, TC-13, & TC-33 billing (19 tests, 150 assertions), TC-10 & TC-11 penempatan (18 tests, 153 assertions), TC-14 pengakhiran penempatan (25 tests, 174 assertions), total suite 229 tests (1420 assertions).
   - **Database Aplikasi (`sim_kos`)**: Diverifikasi koneksi aktual dan tabel awal, dimigrasikan normal tanpa reset database. Data operasional kamar, fasilitas, penempatan, dan akun demo 7 pengguna diverifikasi utuh.
-- **Automated Tests**: 204 passed, 1246 assertions (0 failure, 0 error) pada suite pengujian `sim_kos_test`.
+- **Automated Tests**: 229 passed, 1420 assertions (0 failure, 0 error) pada suite pengujian `sim_kos_test`.
 - **Frontend & Master Data**: Layout bersama Bootstrap 5 lokal, navigasi menu "Kamar", "Penghuni", "Fasilitas", & "Penempatan" (Admin) serta "Data Kamar", "Data Penghuni", "Data Fasilitas", & "Data Penempatan" (Pemilik), validasi form server-side dengan pesan Indonesia dan aksesibilitas `aria-invalid`, tab filter (Aktif, Selesai/Diarsipkan, Semua), modal konfirmasi interaktif preview terverifikasi server (`preview_token`), pembatalan request preview lama via AbortController dan pelacakan sequence, status dinamis terbebas dari query N+1 (eager loading `validPayment`), otorisasi server-side `Gate::authorize()`, pembuatan penempatan dan penerbitan invoice pertama atomik dengan `BillingService::syncPlacementInvoices`, serta proteksi drift tarif/tanggal operasional pasca-lock.
 
 ## Langkah berikut
 
-Task T10: Mulai Penempatan telah selesai secara penuh dengan seluruh pengujian TC-10 dan TC-11 (18 tests, 153 assertions) serta 7 screenshot bukti visual (termasuk verifikasi pembatalan preview lama di browser). Langkah berikutnya adalah melanjutkan ke implementasi Task **T11: Selesai Penempatan (Check-out / Penghentian Kontrak)** yang mengintegrasikan penghentian sewa kamar aktif, pencatatan tanggal keluar (`ended_on`), alasan selesai (`end_reason`), pembebasan status hunian kamar, verifikasi kelengkapan tagihan akhir via `BillingService::syncPlacementInvoices` (bulan keluar ditagih penuh), penguncian baris (`lockForUpdate`), serta pencatatan audit log pengakhiran sewa.
+Task T11: Akhiri Penempatan (Check-out) telah selesai secara penuh dengan seluruh pengujian TC-14 (25 tests, 174 assertions) serta 4 screenshot bukti visual. Langkah berikutnya adalah melanjutkan ke implementasi Task **T12: Halaman Tagihan & Sinkronisasi Manual (Billing Management)** yang mencakup daftar invoice seluruh penempatan, filter status pembayaran (lunas/belum lunas), trigger sinkronisasi tagihan manual oleh Administrator, dan audit trail penagihan.
 
 ## Tabel progres
 
@@ -28,7 +28,7 @@ Task T10: Mulai Penempatan telah selesai secara penuh dengan seluruh pengujian T
 | 2 Data/penempatan | T08 | Selesai | docs/evidence/t08-walkthrough.md, docs/evidence/t08/ (10 screenshot nyata), test-results.md (TC-08 & TC-09: 40 tests, 277 assertions) |
 | 2 Data/penempatan | T09 | Selesai | docs/evidence/t09-walkthrough.md, test-results.md (TC-12, TC-13, TC-33: 19 tests, 150 assertions) |
 | 2 Data/penempatan | T10 | Selesai | docs/evidence/t10-walkthrough.md, docs/evidence/t10/ (7 screenshot nyata), test-results.md (TC-10 & TC-11: 18 tests, 153 assertions) |
-| 2 Data/penempatan | T11 | Belum dimulai | — |
+| 2 Data/penempatan | T11 | Selesai | docs/evidence/t11-walkthrough.md, test-results.md (TC-14: 25 tests, 174 assertions), docs/evidence/t11/ (4 screenshot nyata) |
 | 3 Pembayaran | T12–T15 | Belum dimulai | — |
 | 4 Keluhan | T16–T17 | Belum dimulai | — |
 | 5 Informasi | T18–T20 | Belum dimulai | — |
@@ -617,7 +617,6 @@ Task berikutnya:
   - Log rinci pengujian TC-10 & TC-11: [docs/evidence/test-results.md](docs/evidence/test-results.md)
   - Bukti tangkapan layar visual: [docs/evidence/t10/](docs/evidence/t10/) (7 tangkapan layar)
 - **Hal yang belum diuji**:
-  - Modul Akhiri Penempatan / Check-out kamar aktif (T11).
   - Antarmuka daftar tagihan dan sinkronisasi manual penagihan (T12).
   - Pencatatan pembayaran tunai/transfer (T13).
 - **Kendala tersisa**:
@@ -628,7 +627,93 @@ Task berikutnya:
   - Jalankan test suite penuh: `php artisan test`
   - Buka halaman Penempatan di browser: `http://127.0.0.1:8000/placements`
 - **Task berikutnya**:
-  - T11: Selesai Penempatan (Check-out / Penghentian Kontrak: form dan aksi pengakhiran sewa, pencatatan tanggal keluar `ended_on` dan alasan selesai `end_reason`, pembebasan status hunian kamar, verifikasi kelengkapan tagihan akhir melalui `BillingService::syncPlacementInvoices`, serta pencatatan audit log pengakhiran sewa).
+  - T11: SELESAI (lanjut ke T12).
+
+### T11 - Akhiri Penempatan (Check-out / Pengakhiran Kontrak Sewa)
+- **Tanggal**: 23 September 2026
+- **Task dan status**: T11 SELESAI
+- **Ringkasan perubahan**:
+  - Membangun otorisasi kebijakan `end(User $user, Placement $placement): bool` pada `app/Policies/PlacementPolicy.php` yang memverifikasi wewenang Administrator aktif, dengan pemisahan status bisnis penempatan (penolakan bisnis yang ramah ditangani service layer, bukan 403).
+  - Mengembangkan service layer `PlacementService` (`app/Services/PlacementService.php`):
+    - `computeFinancialSnapshot`: Helper murni in-memory (0 kueri basis data) untuk kalkulasi snapshot finansial dan signature SHA-256 yang menerima collection invoice terkunci dan periode wajib dari `BillingService::getRequiredPeriods()`. Mengurutkan invoice berdasarkan ID (`sortBy('id')`), membentuk token material invoice, menghitung `missing_periods` in-memory, serta menyusun signature deterministik tanpa mencampurkan hasil *locking read* dengan *consistent read* biasa yang berpotensi memakai snapshot MVCC usang pada MySQL isolasi `REPEATABLE READ`.
+    - `buildMaterialFinancialSnapshot`: Helper pengambil data khusus tahap pratinjau yang mendelegasikan kalkulasi ke `computeFinancialSnapshot`.
+    - `previewEndPlacement`: Memverifikasi Admin aktif dan penempatan aktif, menetapkan satu tanggal bisnis `Asia/Jakarta`, menghitung snapshot finansial murni *read-only* (0 mutasi database), menyimpan token sesi terverifikasi server `placement_end_preview_{token}` selama 15 menit, dan mengembalikan payload tampilan modal.
+    - `endPlacement`: Memvalidasi token preview dari session, membungkus seluruh mutasi dalam transaksi database `DB::transaction`, menerapkan penguncian baris pesimistik terurut `Room` $\rightarrow$ `Resident` $\rightarrow$ `User` $\rightarrow$ `Placement` $\rightarrow$ `Invoice` $\rightarrow$ `Payment`, memasang relasi payment valid terkunci, mengevaluasi ulang status penempatan di bawah lock, menetapkan tanggal bisnis sekali, memverifikasi ketiadaan drift tanggal bisnis kalender dan drift material snapshot finansial pasca-lock via `computeFinancialSnapshot`, menyinkronkan invoice hilang sampai bulan keluar penuh tanpa prorata via `BillingService::syncPlacementInvoices`, memperbarui `ended_on`, `ended_by`, `end_reason` (terpangkas spasi), mencatat audit log atomik pada modul `placements` action `end`, dan mendaftarkan pembersihan token sesi via `DB::afterCommit` pada transaksi terluar.
+  - Membangun Form Request `PreviewEndPlacementRequest` dan `StoreEndPlacementRequest` pada `app/Http/Requests/Placement/`:
+    - `PreviewEndPlacementRequest`: Otorisasi via `Gate::allows('end', $placement)`.
+    - `StoreEndPlacementRequest`: Otorisasi via policy, pemangkasan spasi `end_reason` di `prepareForValidation` sebelum aturan `min:5` dan `max:255` sehingga input spasi murni ditolak, validasi `preview_token`, serta sanitasi ketat field yang divalidasi.
+  - Menambahkan method controller `endPreview` dan `end` pada `app/Http/Controllers/PlacementController.php` dan mendaftarkan rute web `placements.end-preview` dan `placements.end` pada `routes/web.php`.
+  - Memperbarui tampilan Blade `resources/views/placements/show.blade.php`:
+    - Menambahkan tombol "Akhiri Penempatan" yang hanya tampil jika Administrator berwenang DAN penempatan masih aktif (`@if($placement->isActive() && auth()->user()->can('end', $placement))`).
+    - Modal konfirmasi `#endPlacementModal` interaktif: ringkasan penghuni & kamar, tarif kontrak, ketentuan tarif penuh bulan keluar tanpa prorata, ringkasan invoice eksisting dan invoice baru yang akan terbit, peringatan kewajiban tertunggak, textarea alasan dengan penghitung karakter dinamis, proteksi pembatalan fetch via `AbortController` dan `requestSequence`, serta render teks aman XSS via `textContent`.
+  - Membangun test suite komprehensif TC-14 pada `tests/Feature/PlacementEndTest.php` mencakup 25 metode pengujian (174 assertions):
+    1. Pratinjau pengakhiran read-only (0 mutasi database).
+    2. Eksekusi pengakhiran atomik dengan invoice keluar dan audit log.
+    3. Pembebasan kamar instan via status hunian turunan.
+    4. Integrasi penempatan ulang T10 bagi penghuni yang telah keluar.
+    5. Penolakan ramah bagi penempatan yang sudah selesai.
+    6. Matriks otorisasi (Admin aktif diizinkan, Owner/Resident/Admin nonaktif ditolak).
+    7. Validasi alasan pangkas spasi, batas panjang, dan penolakan array anti-500.
+    8. Retensi error hanya pada input `end_reason`.
+    9. Deteksi drift tanggal operasional bisnis melintasi tengah malam.
+    10. Deteksi drift penambahan invoice pasca-preview.
+    11. Deteksi drift pencatatan payment valid pasca-preview.
+    12. Deteksi drift pembatalan/void payment valid pasca-preview.
+    13. Konsistensi signature deterministik bebas pengaruh urutan kueri.
+    14. Integritas status aktif/nonaktif akun penghuni yang tidak berubah pasca-checkout.
+    15. Pelestarian seluruh histori tagihan dan kewajiban belum lunas.
+    16. Pembuktian rollback atomik total pada kegagalan audit placement tahap akhir dengan BillingService nyata (invoice dan audit invoice sempat tersimpan lalu di-rollback bersih).
+    17. Submit ulang idempoten tanpa mengubah histori yang sudah selesai.
+    18. Pengabaian manipulasi payload finansial dari browser.
+    19. Kondisi render antarmuka tombol dan modal.
+    20. Penolakan token preview kedaluwarsa (>15 menit).
+    21. Pembuktian rollback atomik total saat BillingService gagal pada pengakhiran (exception expected, penempatan aktif, invoice/audit baseline, token dipertahankan).
+    22. Pembuktian rollback atomik total saat audit invoice gagal setelah invoice mulai dibuat (exception expected, penempatan aktif, invoice/audit baseline, token dipertahankan).
+    23. Integrasi: keluar tanggal 1 tetap ditagih penuh sebulan (tanpa prorata 1 hari).
+    24. Integrasi: mulai dan keluar pada hari yang sama tidak menggandakan invoice.
+    25. Integrasi: celah invoice di tengah rentang dilengkapi otomatis tanpa menerbitkan invoice setelah bulan keluar.
+- **File utama**:
+  - `app/Policies/PlacementPolicy.php`
+  - `app/Services/PlacementService.php`
+  - `app/Http/Requests/Placement/PreviewEndPlacementRequest.php`
+  - `app/Http/Requests/Placement/StoreEndPlacementRequest.php`
+  - `app/Http/Controllers/PlacementController.php`
+  - `app/Models/Room.php`
+  - `app/Models/Invoice.php`
+  - `routes/web.php`
+  - `resources/views/placements/show.blade.php`
+  - `tests/Feature/PlacementEndTest.php`
+  - `docs/evidence/t11-walkthrough.md`
+  - `docs/evidence/test-results.md`
+  - `docs/evidence/t11/`
+- **Keputusan/asumsi yang berubah dan dampaknya**:
+  - *Pemisahan Snapshot dari Kueri Pasca-Lock*: Helper `computeFinancialSnapshot` mengevaluasi koleksi baris terkunci di memori tanpa kueri database. Menghilangkan risiko pembacaan snapshot MVCC usang pada MySQL `REPEATABLE READ`.
+  - *Verifikasi Isolasi Aktual*: Tingkat isolasi database diverifikasi via `SELECT @@transaction_isolation;` bernilai `REPEATABLE-READ`. Batasan pengujian satu koneksi dicatat secara transparan.
+  - *Penghapusan Token Sesi Pasca-Commit Terluar*: Token preview sesi didaftarkan via `DB::afterCommit`. Menjamin pembersihan hanya terjadi ketika transaksi terluar commit, dan token tetap aman bila terjadi rollback.
+  - *Penjelasan Hierarki Kunci*: Menghapus klaim bebas deadlock dan menjelaskan kompatibilitas urutan kunci aktual: `Room` $\rightarrow$ `Resident` $\rightarrow$ `User` $\rightarrow$ `Placement` $\rightarrow$ `Invoice` $\rightarrow$ `Payment`.
+  - *Pemisahan Otorisasi dari Status Bisnis*: Policy `end` hanya memeriksa hak Admin aktif. Penempatan yang sudah berstatus selesai ditangani service dengan penolakan bisnis yang ramah ("Penempatan ini sudah berstatus selesai..."), bukan HTTP 403.
+- **Perintah verifikasi yang benar-benar dijalankan**:
+  - `php vendor/bin/phpunit --testdox tests/Feature/PlacementEndTest.php` (Hasil: 25 tests, 25 passed, 174 assertions, 0 failure)
+  - `php artisan test` (Hasil: 229 tests, 229 passed, 1420 assertions, 0 failure)
+  - `npm run build` (Hasil: Sukses kompilasi CSS & JS Vite production bundle)
+  - Verifikasi browser riil (Desktop & Mobile 390x844) terekam di `docs/evidence/t11/`.
+- **Hasil dan lokasi bukti**:
+  - Walkthrough lengkap: [docs/evidence/t11-walkthrough.md](docs/evidence/t11-walkthrough.md)
+  - Log rinci pengujian TC-14: [docs/evidence/test-results.md](docs/evidence/test-results.md)
+  - Bukti tangkapan layar visual: [docs/evidence/t11/](docs/evidence/t11/) (4 tangkapan layar desktop & mobile)
+- **Hal yang belum diuji**:
+  - Antarmuka daftar tagihan dan sinkronisasi manual penagihan (T12).
+  - Pencatatan pembayaran tunai/transfer (T13).
+- **Kendala tersisa**:
+  - Tidak ada kendala teknis. Seluruh kriteria bisnis, koreksi penutupan, dan verifikasi antarmuka visual T11 terpenuhi dengan sempurna.
+- **Cara menjalankan keadaan saat ini**:
+  - Pastikan server aktif: `php artisan serve`
+  - Jalankan test suite Placement End: `php vendor/bin/phpunit --testdox tests/Feature/PlacementEndTest.php`
+  - Jalankan test suite penuh: `php artisan test`
+  - Buka halaman Penempatan di browser: `http://127.0.0.1:8000/placements`
+- **Task berikutnya**:
+  - T12: Halaman Tagihan & Sinkronisasi Manual (Billing Management).
+
 
 
 

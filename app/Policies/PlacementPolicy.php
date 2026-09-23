@@ -33,4 +33,15 @@ class PlacementPolicy
     {
         return $user->role?->code === 'admin' && (bool) $user->is_active;
     }
+
+    /**
+     * Determine whether the user can end a placement.
+     * Evaluates active Admin authority.
+     * Note: Business status check (whether the placement is already ended) is handled
+     * authoritatively by the service layer to return friendly domain messages rather than 403.
+     */
+    public function end(User $user, Placement $placement): bool
+    {
+        return $user->role?->code === 'admin' && (bool) $user->is_active;
+    }
 }
