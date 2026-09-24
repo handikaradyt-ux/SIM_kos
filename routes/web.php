@@ -82,6 +82,12 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/placements/{placement}', [\App\Http\Controllers\PlacementController::class, 'show'])->name('placements.show');
         Route::post('/placements/{placement}/end-preview', [\App\Http\Controllers\PlacementController::class, 'endPreview'])->name('placements.end-preview');
         Route::post('/placements/{placement}/end', [\App\Http\Controllers\PlacementController::class, 'end'])->name('placements.end');
+
+        // Manajemen Tagihan & Sinkronisasi (Invoice Management - T12)
+        Route::get('/invoices', [\App\Http\Controllers\InvoiceController::class, 'index'])->name('invoices.index');
+        Route::post('/invoices/sync-preview', [\App\Http\Controllers\InvoiceController::class, 'syncPreview'])->name('invoices.sync-preview');
+        Route::post('/invoices/sync', [\App\Http\Controllers\InvoiceController::class, 'sync'])->name('invoices.sync');
+        Route::get('/invoices/{invoice}', [\App\Http\Controllers\InvoiceController::class, 'show'])->name('invoices.show');
     });
 });
 

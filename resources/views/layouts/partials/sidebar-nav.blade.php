@@ -68,10 +68,9 @@
         <div class="simkos-nav-section-title">Keuangan</div>
         <ul class="simkos-nav">
             <li>
-                <span class="simkos-nav-item-disabled">
+                <a href="{{ route('invoices.index') }}" class="simkos-nav-link {{ request()->routeIs('invoices.*') ? 'active' : '' }}">
                     <span>Tagihan</span>
-                    <span class="simkos-badge-unavailable">Belum tersedia</span>
-                </span>
+                </a>
             </li>
             <li>
                 <span class="simkos-nav-item-disabled">
@@ -148,10 +147,9 @@
         <div class="simkos-nav-section-title">Pemantauan Finansial & Layanan</div>
         <ul class="simkos-nav">
             <li>
-                <span class="simkos-nav-item-disabled">
+                <a href="{{ route('invoices.index') }}" class="simkos-nav-link {{ request()->routeIs('invoices.*') ? 'active' : '' }}">
                     <span>Status Tagihan</span>
-                    <span class="simkos-badge-unavailable">Belum tersedia</span>
-                </span>
+                </a>
             </li>
             <li>
                 <span class="simkos-nav-item-disabled">
@@ -199,6 +197,11 @@
 
         <div class="simkos-nav-section-title">Layanan Mandiri</div>
         <ul class="simkos-nav">
+            <li>
+                <a href="{{ route('invoices.index') }}" class="simkos-nav-link {{ request()->routeIs('invoices.*') ? 'active' : '' }}">
+                    <span>Tagihan Saya</span>
+                </a>
+            </li>
             <li>
                 <span class="simkos-nav-item-disabled">
                     <span>Pembayaran Saya</span>

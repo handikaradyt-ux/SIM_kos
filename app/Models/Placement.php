@@ -66,6 +66,11 @@ class Placement extends Model
         return $this->ended_on === null;
     }
 
+    public function isEnded(): bool
+    {
+        return $this->ended_on !== null;
+    }
+
     public function scopeActive($query)
     {
         return $query->whereNull('placements.ended_on');

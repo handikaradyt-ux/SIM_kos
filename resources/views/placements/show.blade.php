@@ -169,11 +169,11 @@
                         @forelse($placement->invoices as $invoice)
                             <tr>
                                 <td class="ps-3">
-                                    <span class="fw-bold text-dark d-block">
+                                    <a href="{{ route('invoices.show', $invoice) }}" class="fw-bold text-dark d-block text-decoration-none text-teal-hover">
                                         {{ $invoice->period_month ? $invoice->period_month->translatedFormat('F Y') : '-' }}
-                                    </span>
+                                    </a>
                                     <span class="small text-muted">
-                                        {{ $invoice->period_month ? $invoice->period_month->format('Y-m-01') : '-' }}
+                                        #INV-{{ str_pad($invoice->id, 5, '0', STR_PAD_LEFT) }}
                                     </span>
                                 </td>
                                 <td>

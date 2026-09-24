@@ -29,6 +29,7 @@ Dokumen ini merekam hasil aktual pengujian otomatis dan manual Sistem Informasi 
 | **TC-14** | Pengakhiran Penempatan (Check-out / Placement Termination): Admin mengakhiri penempatan aktif melalui preview sesi terverifikasi server (`preview_token`), snapshot finansial material deterministik SHA-256 (diurutkan berdasarkan invoice ID, status payment valid, tarif kontrak, periode hilang, dan total kewajiban murni in-memory tanpa mencampur consistent read MVCC), penguncian baris pesimistik Room $\rightarrow$ Resident $\rightarrow$ User $\rightarrow$ Placement $\rightarrow$ Invoices $\rightarrow$ Payments sebelum evaluasi snapshot, sinkronisasi invoice sampai bulan keluar penuh tanpa prorata, pencatatan tanggal/pelaku/alasan keluar, pembebasan kamar otomatis via status turunan hunian dinamis, pelestarian kewajiban belum lunas, dan pembuktian atomisitas rollback total untuk kegagalan BillingService, kegagalan audit invoice, dan kegagalan audit placement tahap akhir dengan BillingService nyata. | 1. Admin dapat mempratinjau pengakhiran penempatan secara murni *read-only* (0 mutasi database) dengan ringkasan finansial lengkap dan token preview terverifikasi server.<br>2. Submit pengakhiran mengunci baris entitas terkait secara konsisten dan memverifikasi ketiadaan *drift* tanggal operasional kalender serta perubahan material status tagihan/pembayaran.<br>3. Tanggal keluar ditetapkan server hari ini (`Asia/Jakarta`) tanpa prorata untuk bulan berjalan; keluar tanggal 1 tetap ditagih penuh sebulan.<br>4. Penempatan mulai dan keluar pada hari yang sama tidak menggandakan invoice.<br>5. Celah tagihan di tengah rentang sewa dilengkapi otomatis tanpa menerbitkan invoice setelah bulan keluar.<br>6. Status hunian kamar otomatis menjadi kosong (*vacant*) secara langsung melalui kueri turunan tanpa kolom manual.<br>7. Penghuni yang telah keluar dapat ditempatkan kembali pada kamar lain (integrasi T10).<br>8. Penghuni/Pemilik dilarang penuh (HTTP 403), sedangkan penempatan yang sudah selesai ditolak dengan pesan bisnis yang jelas ("Penempatan ini sudah berstatus selesai..."), bukan 403.<br>9. Input alasan pengakhiran dipangkas spasi (*trimmed*) dan divalidasi 5-255 karakter (anti-500 pada array/tipe invalid).<br>10. Tiga skenario rollback atomik teruji: kegagalan BillingService, kegagalan audit invoice, dan kegagalan audit placement dengan BillingService nyata membuktikan exception yang diharapkan terjadi, penempatan tetap aktif, invoice/audit kembali ke baseline, dan token tidak dihapus dari session.<br>11. Token sesi preview dihapus strictly via `DB::afterCommit` hanya setelah transaksi database berhasil di-commit. | 23 September 2026 | **LULUS** | `php vendor/bin/phpunit --testdox tests/Feature/PlacementEndTest.php` (25 tests, 174 assertions) & 4 screenshots di `docs/evidence/t11/` |
 | **TC-30** | Integritas Data Akun & Transaksional: Sinkronisasi pembaruan nama pengguna dan profil penghuni tanpa mengubah snapshot nama historis pada `invoices.resident_name_snapshot`, penolakan mutasi role via payload (`role_id`, `role`, `password`, dll), penolakan manipulasi akun Admin/Pemilik melalui `ResidentService`, serta atomisitas transaksi rollback penuh bila pembuatan profil atau pencatatan audit kedua gagal. | 1. Pembaruan nama pada profil penghuni menyinkronkan nama akun `users.name`, namun terbukti TIDAK mengubah `resident_name_snapshot` pada faktur historis.<br>2. Injeksi field sensitif (`role_id`, `role`, `is_active`, `archived_at`, `password`, `must_change_password`) melalui request biasa ditolak/dibersihkan secara otomatis.<br>3. Percobaan manipulasi akun non-resident (Admin/Pemilik) melalui service penghuni ditolak dengan `InvalidArgumentException`.<br>4. Seluruh mutasi dibungkus dalam `DB::transaction()` dengan penguncian baris `lockForUpdate` konsisten (Resident lalu User).<br>5. Seluruh 8 skenario mutasi bisnis (create, update, delete, archive, unarchive, activate, deactivate, reset-password) terbukti rollback penuh jika audit log gagal. | 21 September 2026 | **LULUS** | `tests/Feature/ResidentTest.php` (tests spesifik TC-30) |
 | **TC-33** | Imutabilitas Snapshot Tarif & Kontrak Sewa: Perubahan tarif bulanan kamar fisik di kemudian hari tidak mengubah `agreed_monthly_rate` penempatan aktif maupun nominal invoice lama/baru dalam kontrak tersebut; kontrak penempatan baru menggunakan tarif kamar fisik yang berlaku saat kontrak dibuat; pengujian deterministik batas akhir bulan, tahun kabisat Februari, dan pergantian tahun. | 1. Pembaruan harga kamar fisik pada tabel `rooms` terbukti TIDAK mengubah nominal invoice yang diterbitkan untuk kontrak penempatan berjalan (nominal konsisten mengikuti `agreed_monthly_rate`).<br>2. Pembaruan nama penghuni atau nomor kamar di master data tidak mengubah nilai historis pada snapshot `resident_name_snapshot` dan `room_number_snapshot`.<br>3. Perhitungan periode sewa menangani batas hari akhir bulan (31 Januari $\rightarrow$ Februari), tahun kabisat (29 Februari 2024/2028), tahun biasa (28 Februari), serta pergantian tahun kalender (Desember $\rightarrow$ Januari) secara deterministik dan presisi.<br>4. Integritas basis data diperkuat oleh constraint `UNIQUE(placement_id, period_month)` yang mencegah inkonsistensi data pada batas konkurensi. | 21 September 2026 | **LULUS** | `php vendor/bin/phpunit --testdox tests/Feature/BillingServiceTest.php` (tests spesifik TC-33) |
+| **TC-34** | Antarmuka Tagihan, Pratinjau Terikat Sesi Server, Kontrol Pengurutan Kolom, Format WIB, dan Sinkronisasi Invoice: Daftar tagihan multi-role (Admin/Owner view all, Resident view strictly own data anti-IDOR), evaluasi cakupan global hingga bulan operasional berjalan (tertutup total bagi Resident), semantik filter status (unpaid mencakup overdue/due today/future; overdue strict subset due_on < today; pembayaran void tidak membuat invoice lunas), normalisasi DATE Asia/Jakarta vs model UTC tanpa mutasi objek Carbon, kontrol pengurutan kolom (period_month, room_number, resident_name, amount, due_on) dengan preservasi filter saringan dan reset paginasi page 1, konversi created_at dan voided_at ke zona Asia/Jakarta (WIB) tanpa menggeser kolom DATE (due_on, paid_on), pratinjau sinkronisasi 0 mutasi database dengan token 40 karakter di sesi server mengikat admin/tanggal/scope/estimasi, penolakan scope tampering, actor mismatch, dan token drift tengah malam WIB, penerbitan nyata invoice via BillingService, pelaporan parsial saat ada penempatan gagal dengan persistensi penempatan sukses dan audit, retry idempoten bebas duplikasi, rekalkulasi aman pasca-perubahan data penempatan, dan eliminasi query N+1 pada tabel baris tagihan via eager loading. | 1. Admin, Owner, dan Resident aktif dapat mengakses daftar tagihan dengan scope terotorisasi.<br>2. Resident dilarang mengakses invoice milik penghuni lain via IDOR (HTTP 403) dan info cakupan global disembunyikan total.<br>3. Filter unpaid teruji mencakup overdue, jatuh tempo hari ini, dan tanggal jatuh tempo mendatang; pembayaran void tidak melunasi invoice.<br>4. Normalisasi kalender Asia/Jakarta menangani batas tengah malam WIB dan objek Carbon input tidak dimutasi.<br>5. Kontrol pengurutan kolom berfungsi presisi untuk 5 kolom backend, menjaga seluruh parameter filter, mereset paginasi ke halaman 1, dan menampilkan indikator panah arah aktif.<br>6. Waktu penerbitan (created_at) dan pembatalan (voided_at) dikonversi presisi ke Asia/Jakarta (WIB), sementara tanggal kalender jatuh tempo (due_on) dan bayar (paid_on) tidak tergeser.<br>7. Preview global lalu POST sync menerbitkan invoice secara nyata melalui BillingService.<br>8. Penempatan gagal dilaporkan parsial dalam flash warning dan penempatan sukses tetap tersimpan bersama audit.<br>9. Retry dengan token pratinjau baru terbukti tidak menggandakan invoice atau entri audit.<br>10. Token dalam batas TTL 15 menit namun telah melintasi pergantian tanggal tengah malam WIB ditolak tanpa mutasi.<br>11. Perubahan data penempatan pasca-preview dihitung ulang secara aman di bawah lock sesuai disclaimer estimasi.<br>12. Eager loading relasi placement, room, resident, dan validPayment mengeliminasi N+1 pada perenderan tabel tagihan. | 24 September 2026 | **LULUS** | `php vendor/bin/phpunit --testdox tests/Feature/InvoiceTest.php` (29 tests, 204 assertions) & 8 screenshots di `docs/evidence/t12/` |
 
 ---
 
@@ -444,7 +445,60 @@ Placement End (Tests\Feature\PlacementEnd)
  ✔ Start and end on same day does not duplicate invoice
  ✔ Gap in invoice periods is filled without issuing future invoices
 
-OK (25 tests, 174 assertions)
+```
+
+---
+
+## Log Rinci Eksekusi TC-34 (`InvoiceTest`)
+
+```text
+PHPUnit 12.5.35 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.3.32
+Configuration: C:\SEMESTER 5\SISTEM INFORMASI PRAKTIKUM\TA\phpunit.xml
+
+Invoice (Tests\Feature\Invoice)
+ ✔ Guest is redirected to login
+ ✔ User with temp password is redirected to password change
+ ✔ Inactive user is logged out or forbidden
+ ✔ Admin can view all invoices and global coverage
+ ✔ Owner can view all invoices and coverage read only without sync action
+ ✔ Resident can only view own invoices and global coverage is strictly hidden
+ ✔ Resident cannot access other resident invoice detail anti idor
+ ✔ Resident user without resident profile renders safe empty page
+ ✔ Unpaid filter includes overdue due today and future due dates
+ ✔ Void payment does not make invoice paid
+ ✔ Due date boundary around midnight wib and utc normalization
+ ✔ Search and filter period and placement status
+ ✔ Invalid query parameters sanitized without 500
+ ✔ Invoice snapshots remain immutable after room and resident updates
+ ✔ Sync preview performs zero database mutations and returns bound token
+ ✔ Sync preview for single placement
+ ✔ Sync execution creates invoices and invalidates token
+ ✔ Scope tampering is rejected
+ ✔ Actor mismatch is rejected
+ ✔ Expired preview token is rejected
+ ✔ Sync execution is strictly idempotent
+ ✔ Invoices listing table eager loads relations without n plus one
+ ✔ Invoices sorting preserves filters and orders correctly
+ ✔ Invoice detail displays created at and voided at in wib timezone without shifting date columns
+ ✔ Global preview and sync genuinely creates invoices via billing service
+ ✔ Partial failure reporting when one placement fails during sync
+ ✔ Retry with new preview does not duplicate invoices or audits
+ ✔ Sync rejected when wib date drifts even within token ttl
+ ✔ Post preview data changes are recalculated safely upon sync
+
+OK (29 tests, 204 assertions)
+```
+
+---
+
+## Ringkasan Total Suite Pengujian (`php artisan test`)
+
+```text
+Tests:    258 passed (1624 assertions)
+Duration: 76.78s
+Baseline: 229 passed (1420 assertions) -> +29 tests, +204 assertions
 ```
 
 

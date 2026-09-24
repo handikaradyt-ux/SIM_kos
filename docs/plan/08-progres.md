@@ -2,17 +2,23 @@
 
 ## Status terkini
 
-- **Progres Implementasi**: Task T01, T02, T03, T04, T05, T06, T07, T08, T09, T10, dan T11 telah SELESAI. Task T12–T24 belum dimulai.
+- **Progres Implementasi**: Task T01 s/d T12 telah SELESAI. Task T13–T24 belum dimulai.
 - **Environment**: PHP 8.3.32 (cli), Composer 2.10.2, Node v24.18.0, npm 11.16.0, Git 2.55.0, MySQL 8.0.30 (Laragon). Ekstensi `intl` telah aktif.
 - **Pemisahan Status Database Nyata**:
-  - **Database Uji (`sim_kos_test`)**: Dimigrasikan penuh (13 migrasi) dan di-seed dengan `RoleSeeder` dan `UserSeeder`. Dilindungi oleh database guard pada `tests/TestCase.php`. Terbukti lulus seluruh pengujian otomatis: TC-31 (18 tests, 86 assertions), TC-24/TC-32 fondasi (10 tests, 46 assertions), TC-01–TC-05 (24 tests, 113 assertions), TC-29 (6 tests, 49 assertions), TC-06 & TC-09 (30 tests, 185 assertions), TC-07/TC-05/TC-30 (37 tests, 185 assertions), TC-08 & TC-09 fasilitas (40 tests, 277 assertions), TC-12, TC-13, & TC-33 billing (19 tests, 150 assertions), TC-10 & TC-11 penempatan (18 tests, 153 assertions), TC-14 pengakhiran penempatan (25 tests, 174 assertions), total suite 229 tests (1420 assertions).
-  - **Database Aplikasi (`sim_kos`)**: Diverifikasi koneksi aktual dan tabel awal, dimigrasikan normal tanpa reset database. Data operasional kamar, fasilitas, penempatan, dan akun demo 7 pengguna diverifikasi utuh.
-- **Automated Tests**: 229 passed, 1420 assertions (0 failure, 0 error) pada suite pengujian `sim_kos_test`.
-- **Frontend & Master Data**: Layout bersama Bootstrap 5 lokal, navigasi menu "Kamar", "Penghuni", "Fasilitas", & "Penempatan" (Admin) serta "Data Kamar", "Data Penghuni", "Data Fasilitas", & "Data Penempatan" (Pemilik), validasi form server-side dengan pesan Indonesia dan aksesibilitas `aria-invalid`, tab filter (Aktif, Selesai/Diarsipkan, Semua), modal konfirmasi interaktif preview terverifikasi server (`preview_token`), pembatalan request preview lama via AbortController dan pelacakan sequence, status dinamis terbebas dari query N+1 (eager loading `validPayment`), otorisasi server-side `Gate::authorize()`, pembuatan penempatan dan penerbitan invoice pertama atomik dengan `BillingService::syncPlacementInvoices`, serta proteksi drift tarif/tanggal operasional pasca-lock.
+  - **Database Uji (`sim_kos_test`)**: Dimigrasikan penuh (13 migrasi) dan di-seed dengan `RoleSeeder` dan `UserSeeder`. Dilindungi oleh database guard pada `tests/TestCase.php`. Terbukti lulus seluruh pengujian otomatis: TC-31 (18 tests, 86 assertions), TC-24/TC-32 fondasi (10 tests, 46 assertions), TC-01–TC-05 (24 tests, 113 assertions), TC-29 (6 tests, 49 assertions), TC-06 & TC-09 (30 tests, 185 assertions), TC-07/TC-05/TC-30 (37 tests, 185 assertions), TC-08 & TC-09 fasilitas (40 tests, 277 assertions), TC-12, TC-13, & TC-33 billing (19 tests, 150 assertions), TC-10 & TC-11 penempatan (18 tests, 153 assertions), TC-14 pengakhiran penempatan (25 tests, 174 assertions), TC-34 antarmuka & sinkronisasi tagihan (29 tests, 204 assertions), total suite 258 tests (1624 assertions).
+  - **Database Aplikasi (`sim_kos`)**: Diverifikasi koneksi aktual dan tabel awal, dimigrasikan normal tanpa reset database. Data operasional kamar, fasilitas, penempatan, dan akun demo diverifikasi utuh.
+- **Automated Tests**: 258 passed, 1624 assertions (0 failure, 0 error) pada suite pengujian `sim_kos_test`.
+- **Frontend & Master Data**: Layout bersama Bootstrap 5 lokal, navigasi menu "Kamar", "Penghuni", "Fasilitas", "Penempatan", & "Tagihan" (Admin) serta "Data Kamar", "Data Penghuni", "Data Fasilitas", "Data Penempatan", & "Status Tagihan" (Pemilik), validasi form server-side dengan pesan Indonesia dan aksesibilitas `aria-invalid`, tab filter dan kontrol pengurutan interaktif, modal konfirmasi interaktif preview terverifikasi server (`preview_token`), status dinamis terbebas dari query N+1 (eager loading `validPayment`), otorisasi server-side `Gate::authorize()`, pembuatan penempatan dan penerbitan invoice pertama atomik dengan `BillingService::syncPlacementInvoices`, serta proteksi drift tarif/tanggal operasional pasca-lock.
 
 ## Langkah berikut
 
-Task T11: Akhiri Penempatan (Check-out) telah selesai secara penuh dengan seluruh pengujian TC-14 (25 tests, 174 assertions) serta 4 screenshot bukti visual. Langkah berikutnya adalah melanjutkan ke implementasi Task **T12: Halaman Tagihan & Sinkronisasi Manual (Billing Management)** yang mencakup daftar invoice seluruh penempatan, filter status pembayaran (lunas/belum lunas), trigger sinkronisasi tagihan manual oleh Administrator, dan audit trail penagihan.
+Task T12: Antarmuka Tagihan, Preview, dan Sinkronisasi Invoice (Billing Management) telah selesai secara penuh dengan seluruh pengujian TC-34 (29 tests, 204 assertions) serta 8 tangkapan layar bukti visual. Langkah berikutnya adalah melanjutkan ke implementasi Task **T13: Pencatatan Pembayaran & Kwitansi (Payment Recording & Receipts)**.
+
+*Catatan Pemisahan Istilah Proyek*:
+- **TC-12** (Test Case): Logika periode pertama / tanggal jatuh tempo dan sinkronisasi idempoten.
+- **TC-13** (Test Case): Deteksi periode kurang (missing periods) dan sinkronisasi tagihan (dashboard, pelaporan, dan cetak pada tahap berikutnya).
+- **T13** (Roadmap Task): Pencatatan Pembayaran & Kwitansi (Payment Recording & Receipts).
+- **T14** (Roadmap Task): Void Pembayaran & Cetak Kuitansi (Void Payments & Printable Receipts).
 
 ## Tabel progres
 
@@ -29,11 +35,10 @@ Task T11: Akhiri Penempatan (Check-out) telah selesai secara penuh dengan seluru
 | 2 Data/penempatan | T09 | Selesai | docs/evidence/t09-walkthrough.md, test-results.md (TC-12, TC-13, TC-33: 19 tests, 150 assertions) |
 | 2 Data/penempatan | T10 | Selesai | docs/evidence/t10-walkthrough.md, docs/evidence/t10/ (7 screenshot nyata), test-results.md (TC-10 & TC-11: 18 tests, 153 assertions) |
 | 2 Data/penempatan | T11 | Selesai | docs/evidence/t11-walkthrough.md, test-results.md (TC-14: 25 tests, 174 assertions), docs/evidence/t11/ (4 screenshot nyata) |
-| 3 Pembayaran | T12–T15 | Belum dimulai | — |
-| 4 Keluhan | T16–T17 | Belum dimulai | — |
-| 5 Informasi | T18–T20 | Belum dimulai | — |
-| 6 Penyerahan | T21–T24 | Belum dimulai | — |
-| 3 Pembayaran | T12–T15 | Belum dimulai | — |
+| 3 Pembayaran | T12 | Selesai | docs/evidence/t12-walkthrough.md, test-results.md (TC-34: 29 tests, 204 assertions), docs/evidence/t12/ (8 screenshot nyata) |
+| 3 Pembayaran | T13 | Belum dimulai | — |
+| 3 Pembayaran | T14 | Belum dimulai | — |
+| 3 Pembayaran | T15 | Belum dimulai | — |
 | 4 Keluhan | T16–T17 | Belum dimulai | — |
 | 5 Informasi | T18–T20 | Belum dimulai | — |
 | 6 Penyerahan | T21–T24 | Belum dimulai | — |
@@ -713,6 +718,65 @@ Task berikutnya:
   - Buka halaman Penempatan di browser: `http://127.0.0.1:8000/placements`
 - **Task berikutnya**:
   - T12: Halaman Tagihan & Sinkronisasi Manual (Billing Management).
+
+### T12 - Antarmuka Tagihan, Preview, dan Sinkronisasi Invoice (Billing Management)
+- **Tanggal**: 24 September 2026
+- **Task dan status**: T12 SELESAI
+- **Ringkasan perubahan**:
+  - Mengembangkan `app/Policies/InvoicePolicy.php` dengan pemisahan peran ketat: Admin kelola & sinkronisasi penuh, Owner baca-saja seluruh invoice & cakupan global, Resident hanya dapat melihat invoice penempatannya sendiri dengan perlindungan anti-IDOR pada `/invoices/{invoice}` (HTTP 403) dan proteksi kebocoran cakupan global.
+  - Memutakhirkan `app/Models/Invoice.php` dengan normalisasi kalender `Asia/Jakarta` tanpa memutasi Carbon model UTC (`parseNormalizedDate`), semantik status finansial komprehensif (`isPaid`, `isOverdue`, `isDueToday`, `isDueFuture`), serta query scope (`scopeSearch`, `scopeStatus`, `scopePeriod`, `scopePlacementStatus`).
+  - Menambahkan method `isEnded(): bool` pada `app/Models/Placement` melengkapi `isActive(): bool`.
+  - Mengembangkan `app/Http/Controllers/InvoiceController.php` dengan sanitasi parameter filter query string (anti-500), kontrol pengurutan (sorting) untuk 5 kolom backend (`period_month`, `room_number`, `resident_name`, `amount`, `due_on`), eager loading relasi untuk eliminasi N+1 tabel tagihan, pratinjau sinkronisasi 0 mutasi database terikat sesi server (`syncPreview`), serta eksekusi sinkronisasi mandiri per penempatan tanpa outer transaction (`sync`) dengan pelaporan hasil aktual secara aman.
+  - Mengembangkan view `resources/views/invoices/index.blade.php` (banner cakupan global Admin/Owner, filter form dengan preservasi sort/direction, kontrol header kolom yang dapat diurutkan dengan reset halaman ke page 1 dan indikator panah arah aktif, tabel invoice dengan snapshot dan badge warna, modal pratinjau sinkronisasi dengan perenderan aman `textContent`) dan `resources/views/invoices/show.blade.php` (rincian tagihan, format waktu penerbitan dan void dalam WIB presisi tanpa menggeser kolom DATE, komparasi snapshot permanen vs data operasional, rincian pembayaran sah dan riwayat pembayaran void).
+  - Mengaktifkan tautan navigasi tagihan pada `resources/views/layouts/partials/sidebar-nav.blade.php` untuk Admin ("Tagihan"), Owner ("Status Tagihan"), dan Resident ("Tagihan Saya").
+  - Menghubungkan baris tagihan pada `resources/views/placements/show.blade.php` langsung ke detail invoice.
+- **File utama**:
+  - `app/Policies/InvoicePolicy.php`
+  - `app/Models/Invoice.php`
+  - `app/Models/Placement.php`
+  - `app/Http/Controllers/InvoiceController.php`
+  - `app/Http/Requests/Invoice/SyncPreviewInvoiceRequest.php`
+  - `app/Http/Requests/Invoice/SyncInvoiceRequest.php`
+  - `routes/web.php`
+  - `resources/views/invoices/index.blade.php`
+  - `resources/views/invoices/show.blade.php`
+  - `resources/views/layouts/partials/sidebar-nav.blade.php`
+  - `resources/views/placements/show.blade.php`
+  - `tests/Feature/InvoiceTest.php`
+  - `docs/evidence/t12-walkthrough.md`
+  - `docs/evidence/test-results.md`
+  - `docs/evidence/t12/`
+- **Keputusan/asumsi yang berubah dan dampaknya**:
+  - *Semantik Status Unpaid vs Overdue*: Filter `unpaid` mencakup seluruh invoice yang belum memiliki pembayaran sah (termasuk overdue, jatuh tempo hari ini, dan tanggal mendatang). Filter `overdue` adalah strict subset dengan `due_on < today` (Asia/Jakarta). Jatuh tempo hari ini bukan overdue. Pembayaran void tidak melunasi invoice.
+  - *Normalisasi Tanggal Kalender & Format WIB*: Format `Y-m-d` diekstrak dan dinormalisasi ke `Asia/Jakarta` start of day tanpa memutasi objek Carbon input aslinya. Timestamp `created_at` dan `voided_at` dikonversikan secara presisi ke `Asia/Jakarta` sebelum dilabeli `WIB`. Kolom kalender murni bertipe DATE (`due_on`, `paid_on`) tidak digeser oleh zona waktu.
+  - *Pengurutan Kolom & Preservasi Parameter*: Kolom `period_month`, `room_number`, `resident_name`, `amount`, dan `due_on` dapat diurutkan secara interaktif. Tautan pengurutan mempertahankan seluruh parameter filter yang aktif via `request()->except(['page', 'sort', 'direction'])` dan mereset paginasi ke halaman 1. Form saringan menyertakan hidden input `sort` dan `direction`.
+  - *Transparansi Batas Transaksi*: Pada level aplikasi produksi, `InvoiceController::sync` tidak membungkus `syncAllPlacements` dalam transaksi luar, sehingga commit per-penempatan terisolasi mandiri. Pengujian feature membuktikan bahwa kegagalan satu penempatan ditangkap oleh batch loop, dilaporkan via flash warning yang aman, dan penempatan sukses tetap tersimpan bersama audit dalam konteks eksekusi.
+  - *Pemisahan Identitas TC-13 dan T13*: Mengklarifikasi perbedaan antara ID test case **TC-13** (deteksi periode kurang & sinkronisasi) dengan task roadmap implementasi **T13** (Pencatatan Pembayaran & Kwitansi) dan **T14** (Void Pembayaran & Cetak Kuitansi).
+- **Perintah verifikasi yang benar-benar dijalankan**:
+  - `php vendor/bin/phpunit --testdox tests/Feature/InvoiceTest.php` (Hasil: 29 tests, 29 passed, 204 assertions, 0 failure)
+  - `php vendor/bin/phpunit --testdox tests/Feature/LayoutNavigationTest.php` (Hasil: 6 tests, 6 passed, 49 assertions, 0 failure)
+  - `php artisan view:clear && php artisan view:cache` (Hasil: Sukses Blade templates cached successfully)
+  - `npm run build` (Hasil: Sukses kompilasi CSS & JS Vite production bundle)
+  - `php artisan test` (Hasil: 258 tests, 258 passed, 1624 assertions, 0 failure)
+  - Verifikasi browser riil (Admin, Owner, Resident, Mobile 390x844, dan UI Pengurutan) terekam di `docs/evidence/t12/`.
+- **Hasil dan lokasi bukti**:
+  - Walkthrough lengkap: [docs/evidence/t12-walkthrough.md](docs/evidence/t12-walkthrough.md)
+  - Log rinci pengujian TC-34: [docs/evidence/test-results.md](docs/evidence/test-results.md)
+  - Bukti tangkapan layar visual: [docs/evidence/t12/](docs/evidence/t12/) (8 tangkapan layar desktop, sorting, & mobile)
+- **Hal yang belum diuji**:
+  - Form pencatatan pembayaran tunai/transfer interaktif, generate nomor kwitansi, dan penanganan kasir (T13).
+  - Void pembayaran dan pencetakan fisik kuitansi (T14).
+  - Dashboard keuangan dan laporan piutang terpadu (tahap berikutnya).
+- **Kendala tersisa**:
+  - Tidak ada kendala teknis. Seluruh kriteria bisnis, koreksi penutupan, dan verifikasi antarmuka visual T12 terpenuhi dengan sempurna.
+- **Cara menjalankan keadaan saat ini**:
+  - Pastikan server aktif: `php artisan serve`
+  - Jalankan test suite Invoice: `php vendor/bin/phpunit --testdox tests/Feature/InvoiceTest.php`
+  - Jalankan test suite penuh: `php artisan test`
+  - Buka halaman Tagihan di browser: `http://127.0.0.1:8000/invoices`
+- **Task berikutnya**:
+  - T13: Pencatatan Pembayaran & Kwitansi (Payment Recording & Receipts).
+
 
 
 
